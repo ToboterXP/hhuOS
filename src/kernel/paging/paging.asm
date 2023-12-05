@@ -31,27 +31,30 @@ extern bootstrap_paging
 KERNEL_PAGE equ (KERNEL_START >> 22)
 
 section .text
-
+	
 ; Set up first page table with 4MB pages to map kernel to higher half
 enable_bootstrap_paging:
     push bios_page_directory - KERNEL_START
     push bootstrap_page_directory - KERNEL_START
+	push bootstrap_page_dir_pointer_table - KERNEL_START
     call bootstrap_paging
 
-    ; Load physical address of 4MB page directory into cr3
-    mov ecx, bootstrap_page_directory - KERNEL_START
+    ; Load physical address of page dierectory pointer table into cr3
+    mov ecx, bootstrap_page_dir_pointer_table - KERNEL_START
     mov cr3, ecx
+	
 
-    ; Enable pse bit for 4MB paging
+    ; Enable pse and pae bit for 4MB paging
     mov ecx, cr4
     or  ecx, 0x00000010
+	or  ecx, 0x00000020
     mov cr4, ecx
 
     ; Enable paging and page protection in cr0
     mov ecx, cr0
     or  ecx, 0x80010000
     mov cr0, ecx
-
+	
     ; Jump back to boot sequence in boot.asm
     lea ecx, [on_paging_enabled]
     jmp ecx
@@ -72,15 +75,20 @@ load_page_directory:
 
 section .data
 
-; All paging stuff has to be 4KB aligned
-align 0x1000
-
 ; The following directories are set up in bootstrap_paging
 
-; Page Directory for Bootstrapping
+; page table has to be 4KB aligned
+align 0x1000	
+bootstrap_page_dir_pointer_table:
+	times(32) db 0
+
+; page table has to be 4KB aligned
+align 0x1000	
 bootstrap_page_directory:
-    times (1024) dd 0
+	times (16384) db 0
+
 
 ; Page directory with 4MB pages for BIOS-calls
+align 0x1000	
 bios_page_directory:
     times (1024) dd 0

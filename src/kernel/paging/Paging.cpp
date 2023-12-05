@@ -18,17 +18,33 @@
 #include "kernel/multiboot/Multiboot.h"
 #include "Paging.h"
 #include "MemoryLayout.h"
+#include "BootDebug.h"
+#include "PageTable.h"
+
+
+
 
 namespace Kernel {
-
-void Paging::bootstrapPaging(uint32_t *directory, uint32_t *biosDirectory) {
+	
+using namespace PageTable;
+	
+void Paging::bootstrapPaging(PageDirectoryPointerTable * pdpt, PageDirectory (*directory)[4], uint32_t *biosDirectory) {
+	PageDirectoryEntry p1, p2; //two entries necessary for a 4MB page
+	
     // Calculate 4 MiB page where (higher-half) kernel should start
     uint32_t kernelPage = MemoryLayout::KERNEL_START >> 22U;
     // Size of a 4 MiB page
     uint32_t bigPageSize = PAGESIZE * 1024U;
+	uint32_t paePageSize = bigPageSize/2; //PAE big pages are only 2MB large
 
     auto *blockMap = reinterpret_cast<Multiboot::MemoryBlock*>(MemoryLayout::VIRTUAL_TO_PHYSICAL(reinterpret_cast<uint32_t>(Multiboot::getBlockMap())));
-
+	
+	//initialize page directory pointer table with addresses of the page directories
+	for (uint8_t i=0; i<4;i++) {
+		SetPageDirectoryPointerEntry(pdpt, i<<30, (uint64_t)&((*directory)[i]));
+	}
+	
+	//Create paging and bios directory 
     uint32_t pageCount = 0;
     uint32_t blockMapIndex;
     for (blockMapIndex = 0; blockMap[blockMapIndex].blockCount != 0; blockMapIndex++) {
@@ -40,15 +56,31 @@ void Paging::bootstrapPaging(uint32_t *directory, uint32_t *biosDirectory) {
         blockMap[blockMapIndex].virtualStartAddress = (kernelPage + pageCount) * bigPageSize;
 
         for (uint32_t j = 0; j < blockMap[blockMapIndex].blockCount; j++) {
-            directory[pageCount] = (uint32_t) ((startAddress + j * bigPageSize) | PRESENT | READ_WRITE | PAGE_SIZE_MIB);
-            directory[kernelPage + pageCount] = (uint32_t) ((startAddress + j * bigPageSize) | PRESENT | READ_WRITE | PAGE_SIZE_MIB);
-
+			p1 = MakePageDirectoryEntry(startAddress + j * bigPageSize);
+			p2 = MakePageDirectoryEntry(startAddress + j * bigPageSize + paePageSize);
+			
+			p1 = SetPageDirectoryFlag(p1, PageDirectoryFlag::PRESENT, true);
+			p1 = SetPageDirectoryFlag(p1, PageDirectoryFlag::READ_WRITE, true);
+			p1 = SetPageDirectoryFlag(p1, PageDirectoryFlag::PAGE_SIZE, true);
+			p2 = SetPageDirectoryFlag(p2, PageDirectoryFlag::PRESENT, true);
+			p2 = SetPageDirectoryFlag(p2, PageDirectoryFlag::READ_WRITE, true);
+			p2 = SetPageDirectoryFlag(p2, PageDirectoryFlag::PAGE_SIZE, true);
+			
+			//Map to both kernel space and user space
+			SetPageDirectoryEntry(pdpt, pageCount * bigPageSize, p1);
+			SetPageDirectoryEntry(pdpt, pageCount * bigPageSize + paePageSize, p2);
+		
+			SetPageDirectoryEntry(pdpt, (kernelPage + pageCount ) * bigPageSize, p1);
+			SetPageDirectoryEntry(pdpt, (kernelPage + pageCount) * bigPageSize + paePageSize, p2);
+			
+			
             biosDirectory[pageCount] = (uint32_t) ((startAddress + j * bigPageSize) | PRESENT | READ_WRITE | PAGE_SIZE_MIB);
             biosDirectory[kernelPage + pageCount] = (uint32_t) ((startAddress + j * bigPageSize) | PRESENT | READ_WRITE | PAGE_SIZE_MIB);
 
             pageCount++;
         }
     }
+		
 
     // Search 2 free blocks (4 MiB each) for initial heap and paging area
     uint32_t blocksFound = 0;
@@ -88,13 +120,31 @@ void Paging::bootstrapPaging(uint32_t *directory, uint32_t *biosDirectory) {
 
     // The first page of the initial heap above the reserved memory is mapped to an offset of KERNEL_START
     // No identity mapping needed because the heap is only used when paging is already enabled
-    directory[kernelPage + pageCount] = (uint32_t) (heapPhysicalAddress | PRESENT | READ_WRITE | PAGE_SIZE_MIB);
+	p1 = MakePageDirectoryEntry(heapPhysicalAddress);
+	p2 = MakePageDirectoryEntry(heapPhysicalAddress + paePageSize);
+	
+	p1 = SetPageDirectoryFlag(p1, PageDirectoryFlag::PRESENT, true);
+	p1 = SetPageDirectoryFlag(p1, PageDirectoryFlag::READ_WRITE, true);
+	p1 = SetPageDirectoryFlag(p1, PageDirectoryFlag::PAGE_SIZE, true);
+	p2 = SetPageDirectoryFlag(p2, PageDirectoryFlag::PRESENT, true);
+	p2 = SetPageDirectoryFlag(p2, PageDirectoryFlag::READ_WRITE, true);
+	p2 = SetPageDirectoryFlag(p2, PageDirectoryFlag::PAGE_SIZE, true);
+	
+	SetPageDirectoryEntry(pdpt, (kernelPage + pageCount ) * bigPageSize, p1);
+	SetPageDirectoryEntry(pdpt, (kernelPage + pageCount) * bigPageSize + paePageSize, p2);
+
 
     // Calculate index to first virtual address of paging area memory
-    // These first 4 MiB of the paging area are needed to set up the final 4 KiB paging,
-    // so map the first (phys.) 4 MiB after the initial 4 MiB-heap to this address
-    uint32_t pagingAreaIndex = MemoryLayout::PAGING_AREA.startAddress / bigPageSize;
-    directory[pagingAreaIndex] = (uint32_t) (pagingAreaPhysicalAddress | PRESENT | READ_WRITE | PAGE_SIZE_MIB);
+    // These first 10 MiB of the paging area are needed to set up the final 4 KiB paging,
+    // so map the first (phys.) 10 MiB after the initial 4 MiB-heap to this address
+	for (uint8_t i=0; i<4;i++) {
+		p1 = MakePageDirectoryEntry(pagingAreaPhysicalAddress + i*paePageSize);
+		p1 = SetPageDirectoryFlag(p1, PageDirectoryFlag::PRESENT, true);
+		p1 = SetPageDirectoryFlag(p1, PageDirectoryFlag::READ_WRITE, true);
+		p1 = SetPageDirectoryFlag(p1, PageDirectoryFlag::PAGE_SIZE, true);
+		SetPageDirectoryEntry(pdpt, MemoryLayout::PAGING_AREA.startAddress  + i*paePageSize, p1);
+	}
+
 }
 
 }

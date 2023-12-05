@@ -19,5 +19,6 @@ cmake_minimum_required(VERSION 3.14)
 target_sources(kernel PUBLIC
         ${HHUOS_SRC_DIR}/kernel/paging/paging.asm
         ${HHUOS_SRC_DIR}/kernel/paging/Paging.cpp
+		${HHUOS_SRC_DIR}/kernel/paging/PageTable.cpp
         ${HHUOS_SRC_DIR}/kernel/paging/PageDirectory.cpp
         ${HHUOS_SRC_DIR}/kernel/paging/VirtualAddressSpace.cpp)

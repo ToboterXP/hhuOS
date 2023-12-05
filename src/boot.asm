@@ -203,7 +203,8 @@ clear_bss_done:
     ; Read memory map from multiboot info struct
     push dword [multiboot_physical_addr - KERNEL_START]
     call initialize_memory_block_map
-
+	
+	
     ; Jump into paging.asm to enable 4MB paging
     call enable_bootstrap_paging
 

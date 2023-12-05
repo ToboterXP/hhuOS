@@ -20,7 +20,7 @@ readonly CONST_QEMU_BIN_I386="qemu-system-i386"
 readonly CONST_QEMU_BIN_X86_64="qemu-system-x86_64"
 readonly CONST_QEMU_MACHINE_PC="pc"
 readonly CONST_QEMU_MACHINE_PC_KVM="pc,accel=kvm,kernel-irqchip=split"
-readonly CONST_QEMU_CPU_I386="base,+fpu,+tsc,+cmov,+fxsr,+mmx,+sse,+apic"
+readonly CONST_QEMU_CPU_I386="base,+fpu,+tsc,+cmov,+fxsr,+mmx,+sse,+apic,+pae,+pse,+pbe,+pge,+pse36"
 readonly CONST_QEMU_CPU_X86_64="qemu64"
 readonly CONST_QEMU_DEFAULT_RAM="256M"
 readonly CONST_QEMU_BIOS_PC=""
@@ -28,9 +28,10 @@ readonly CONST_QEMU_BIOS_IA32_EFI="bios/ovmf/ia32/OVMF.fd"
 readonly CONST_QEMU_BIOS_X64_EFI="bios/ovmf/x64/OVMF.fd"
 readonly CONST_QEMU_STORAGE_ARGS="-drive driver=raw,index=0,if=floppy,file=floppy0.img -drive driver=raw,node-name=hdd0,file.driver=file,file.filename=hdd0.img"
 readonly CONST_QEMU_NETWORK_ARGS="-nic model=rtl8139,id=eth0,hostfwd=udp::1797-:1797 -object filter-dump,id=filter0,netdev=eth0,file=eth0.dump"
-readonly CONST_QEMU_ARGS="-boot d -vga std -rtc base=localtime -device isa-debug-exit -smp 2"
+readonly CONST_QEMU_ARGS="-boot d -debugcon /dev/stdout -vga std -rtc base=localtime -device isa-debug-exit -smp 2"
 readonly CONST_QEMU_OLD_AUDIO_ARGS="-soundhw pcspk -device sb16,irq=10,dma=1"
 readonly CONST_QEMU_NEW_AUDIO_ARGS="-audiodev id=pa,driver=pa -machine pcspk-audiodev=pa -device sb16,irq=10,dma=1,audiodev=pa"
+readonly CONST_QEMU_DBG_ARGS=""
 
 QEMU_BIN="${CONST_QEMU_BIN_I386}"
 QEMU_MACHINE="${CONST_QEMU_MACHINE_PC}"
@@ -252,7 +253,7 @@ run_qemu() {
     command="${command} -bios ${QEMU_BIOS}"
   fi
 
-  command="${command} -m ${QEMU_RAM} -cpu ${QEMU_CPU} ${QEMU_ARGS} ${QEMU_BOOT_DEVICE} ${QEMU_STORAGE_ARGS} ${QEMU_NETWORK_ARGS} ${QEMU_AUDIO_ARGS}"
+  command="${command} -m ${QEMU_RAM} -cpu ${QEMU_CPU} ${QEMU_ARGS} ${QEMU_BOOT_DEVICE} ${QEMU_STORAGE_ARGS} ${QEMU_NETWORK_ARGS} ${QEMU_AUDIO_ARGS} ${CONST_QEMU_DBG_ARGS}"
   
   printf "Running: %s\\n" "${command}"
 

@@ -24,6 +24,7 @@ include_directories(${HHUOS_SRC_DIR})
 # Set source files
 set(SOURCE_FILES
         ${HHUOS_SRC_DIR}/boot.asm
+		${HHUOS_SRC_DIR}/BootDebug.cpp
         ${HHUOS_SRC_DIR}/BuildConfig.cpp
         ${HHUOS_SRC_DIR}/GatesOfHell.cpp
         ${HHUOS_SRC_DIR}/asm_interface.cpp

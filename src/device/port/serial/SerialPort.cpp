@@ -190,6 +190,12 @@ void SerialPort::write(const uint8_t *sourceBuffer, uint32_t offset, uint32_t le
     }
 }
 
+void SerialPort::writeString(const char* str) {
+	while(*(++str)) {
+		this->write(*str);
+	}
+}
+
 uint8_t SerialPort::readDirect() {
     bool hasData = (lineStatusRegister.readByte() & 0x01) == 0x01;
     while (!hasData) {

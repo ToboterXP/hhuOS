@@ -52,6 +52,7 @@
 #include "device/interrupt/apic/Apic.h"
 #include "device/bios/SmBios.h"
 #include "device/port/serial/SerialPort.h"
+#include "BootDebug.h"
 
 namespace Kernel {
 class Service;
@@ -70,6 +71,7 @@ Logger System::log = Logger::get("System");
  * everything to get the system run.
  */
 void System::initializeSystem() {
+	BootDebug::qemuWriteString("Hello World\r\n");
     Multiboot::initialize();
     Device::Acpi::initialize();
     Device::SmBios::initialize();

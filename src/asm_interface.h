@@ -19,6 +19,7 @@
 #define HHUOS_ASM_INTERFACE
 
 #include <cstdint>
+#include "kernel/paging/PageTable.h"
 
 namespace Kernel {
 struct Context;

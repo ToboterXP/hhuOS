@@ -25,6 +25,7 @@
 #define __PAGING_H__
 
 #include <cstdint>
+#include "PageTable.h"
 
 namespace Kernel {
 
@@ -82,7 +83,7 @@ public:
     * @param directory Pointer to the bootstrapping 4MB page directory
     * @param biosDirectory Pointer to the 4MB page directory only used for BIOS-calls
     */
-    static void bootstrapPaging(uint32_t *directory, uint32_t *biosDirectory);
+    static void bootstrapPaging(PageTable::PageDirectoryPointerTable * pdpt, PageTable::PageDirectory (*directory)[4], uint32_t *biosDirectory);
 
     static constexpr uint32_t GET_PD_IDX(uint32_t x) {
         return x >> 22;

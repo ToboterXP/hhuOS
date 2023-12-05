@@ -29,6 +29,7 @@
 #include "kernel/service/SchedulerService.h"
 #include "kernel/system/TaskStateSegment.h"
 #include "device/bios/SmBios.h"
+#include "kernel/paging/PageTable.h"
 
 // Import functions
 extern "C" {
@@ -45,7 +46,7 @@ void copy_smbios_tables(const Kernel::Multiboot::Info*, uint8_t*, uint32_t);
 void initialize_memory_block_map(const Kernel::Multiboot::Info*);
 void initialize_system();
 void finish_system();
-void bootstrap_paging(uint32_t*, uint32_t*);
+void bootstrap_paging(Kernel::PageTable::PageDirectoryPointerTable * pdpt, Kernel::PageTable::PageDirectory (*directory)[4], uint32_t *biosDirectory);
 void enable_interrupts();
 void disable_interrupts();
 void dispatch_interrupt(Kernel::InterruptFrame*);
@@ -88,8 +89,8 @@ void finish_system() {
     _fini();
 }
 
-void bootstrap_paging(uint32_t *directory, uint32_t *biosDirectory) {
-    Kernel::Paging::bootstrapPaging(directory, biosDirectory);
+void bootstrap_paging(Kernel::PageTable::PageDirectoryPointerTable * pdpt, Kernel::PageTable::PageDirectory (*directory)[4], uint32_t *biosDirectory) {
+    Kernel::Paging::bootstrapPaging(pdpt, directory, biosDirectory);
 }
 
 void enable_interrupts() {
