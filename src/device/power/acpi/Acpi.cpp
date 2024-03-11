@@ -37,7 +37,7 @@ void Acpi::copyTables(const void *multibootInfo, uint8_t *destination, uint32_t 
     copyInfo->copiedBytes = sizeof(CopyInformation);
     copyInfo->success = false;
 
-    auto destinationAddress = Util::Address<uint32_t>(destination + sizeof(CopyInformation));
+    auto destinationAddress = Util::Address<uint64_t>(destination + sizeof(CopyInformation));
 
     auto *rsdp = findRsdp(multibootInfo);
     copyInfo->sourceAddress = reinterpret_cast<uint32_t>(rsdp);
@@ -47,7 +47,7 @@ void Acpi::copyTables(const void *multibootInfo, uint8_t *destination, uint32_t 
 
     // Copy RSDP
     if (copyInfo->copiedBytes + sizeof(Util::Hardware::Acpi::Rsdp) > maxBytes) return;
-    destinationAddress.copyRange(Util::Address<uint32_t>(rsdp), sizeof(Util::Hardware::Acpi::Rsdp));
+    destinationAddress.copyRange(Util::Address<uint64_t>(rsdp), sizeof(Util::Hardware::Acpi::Rsdp));
     rsdp = reinterpret_cast<Util::Hardware::Acpi::Rsdp*>(destinationAddress.get());
     destinationAddress = destinationAddress.add(sizeof(Util::Hardware::Acpi::Rsdp));
     copyInfo->copiedBytes += sizeof(Util::Hardware::Acpi::Rsdp);
@@ -64,7 +64,7 @@ void Acpi::copyTables(const void *multibootInfo, uint8_t *destination, uint32_t 
 
     if (copyInfo->copiedBytes + rsdt->length > maxBytes) return;
     rsdp->rsdtAddress = Kernel::MemoryLayout::PHYSICAL_TO_VIRTUAL(copiedRsdtAddress);
-    destinationAddress.copyRange(Util::Address<uint32_t>(rsdt), rsdt->length);
+    destinationAddress.copyRange(Util::Address<uint64_t>(rsdt), rsdt->length);
     destinationAddress = destinationAddress.add(rsdt->length);
     copyInfo->copiedBytes += rsdt->length;
 
@@ -77,7 +77,7 @@ void Acpi::copyTables(const void *multibootInfo, uint8_t *destination, uint32_t 
         auto *sdt = originalEntries[i];
         if (checkSdt(sdt)) {
             if (copyInfo->copiedBytes + sdt->length > maxBytes) return;
-            destinationAddress.copyRange(Util::Address<uint32_t>(sdt), sdt->length);
+            destinationAddress.copyRange(Util::Address<uint64_t>(sdt), sdt->length);
             copiedEntries[i] = Kernel::MemoryLayout::PHYSICAL_TO_VIRTUAL(destinationAddress.get());
             destinationAddress = destinationAddress.add(sdt->length);
             copyInfo->copiedBytes += sdt->length;
@@ -124,11 +124,11 @@ Util::Hardware::Acpi::Rsdp* Acpi::findRsdp(const void *multibootInfo) {
 
 Util::Hardware::Acpi::Rsdp* Acpi::searchRsdp(uint32_t startAddress, uint32_t endAddress) {
     char signature[sizeof(Util::Hardware::Acpi::Rsdp::signature)] = {'R', 'S', 'D', ' ', 'P', 'T', 'R', ' '};
-    auto signatureAddress = Util::Address<uint32_t>(signature);
-    startAddress = Util::Address<uint32_t>(startAddress).alignUp(16).get();
+    auto signatureAddress = Util::Address<uint64_t>(signature);
+    startAddress = Util::Address<uint64_t>(startAddress).alignUp(16).get();
 
     for (uint32_t i = startAddress; i <= endAddress - sizeof(signature); i += 16) {
-        auto address = Util::Address<uint32_t>(i);
+        auto address = Util::Address<uint64_t>(i);
         if (address.compareRange(signatureAddress, sizeof(Util::Hardware::Acpi::Rsdp::signature)) == 0) {
             if (checkRsdp(reinterpret_cast<Util::Hardware::Acpi::Rsdp*>(i))) {
                 return reinterpret_cast<Util::Hardware::Acpi::Rsdp*>(i);
@@ -184,7 +184,7 @@ const Util::Hardware::Acpi::Rsdp& Acpi::getRsdp() {
 
 bool Acpi::hasTable(const char *signature) {
     for (uint32_t i = 0; i < numTables; i++) {
-        if (Util::Address<uint32_t>(tables[i]->signature).compareRange(Util::Address<uint32_t>(signature), sizeof(Util::Hardware::Acpi::SdtHeader::signature)) == 0) {
+        if (Util::Address<uint64_t>(tables[i]->signature).compareRange(Util::Address<uint64_t>(signature), sizeof(Util::Hardware::Acpi::SdtHeader::signature)) == 0) {
             return true;
         }
     }

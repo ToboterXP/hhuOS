@@ -46,12 +46,12 @@ public:
     /**
      * Get the total amount of memory.
      */
-    [[nodiscard]] virtual uint32_t getTotalMemory() const = 0;
+    [[nodiscard]] virtual uint64_t getTotalMemory() const = 0;
 
     /**
      * Get the amount of free memory.
      */
-    [[nodiscard]] virtual uint32_t getFreeMemory() const = 0;
+    [[nodiscard]] virtual uint64_t getFreeMemory() const = 0;
 
     /**
      * Get the start address of the managed memory.

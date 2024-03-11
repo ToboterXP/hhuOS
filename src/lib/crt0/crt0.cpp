@@ -20,19 +20,19 @@ uint16_t systemCall(uint16_t code, uint32_t paramCount...) {
     va_start(args, paramCount);
     uint16_t result;
 
-    auto eaxValue = static_cast<uint32_t>(code | (paramCount << 16u));
-    auto ebxValue = reinterpret_cast<uint32_t>(args);
-    auto ecxValue = reinterpret_cast<uint32_t>(&result);
+    auto eaxValue = static_cast<uint64_t>(code | (paramCount << 16u));
+    auto ebxValue = reinterpret_cast<uint64_t>(args);
+    auto ecxValue = reinterpret_cast<uint64_t>(&result);
 
     asm volatile (
-    "movl %0, %%eax;"
-    "movl %1, %%ebx;"
-    "movl %2, %%ecx;"
+    "movq %0, %%rax;"
+    "movq %1, %%rbx;"
+    "movq %2, %%rcx;"
     "int $0x86;"
     : :
-    "r"(eaxValue),
-    "r"(ebxValue),
-    "r"(ecxValue));
+    "g"(eaxValue),
+    "g"(ebxValue),
+    "g"(ecxValue));
 
     va_end(args);
     return result;

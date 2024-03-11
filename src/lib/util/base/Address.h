@@ -108,6 +108,9 @@ class Address<uint16_t>;
 template
 class Address<uint32_t>;
 
+template
+class Address<uint64_t>;
+
 }
 
 #endif

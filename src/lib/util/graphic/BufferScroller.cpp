@@ -23,7 +23,7 @@
 namespace Util::Graphic {
 
 BufferScroller::BufferScroller(const LinearFrameBuffer &lfb, bool enableAcceleration) :
-        lfb(lfb), targetBuffer(enableAcceleration ? *Address<uint32_t>::createAcceleratedAddress(lfb.getBuffer().get(), useMmx) : *new Address<uint32_t>(lfb.getBuffer())) {}
+        lfb(lfb), targetBuffer(enableAcceleration ? *Address<uint64_t>::createAcceleratedAddress(lfb.getBuffer().get(), useMmx) : *new Address<uint64_t>(lfb.getBuffer())) {}
 
 BufferScroller::~BufferScroller() {
     delete &targetBuffer;

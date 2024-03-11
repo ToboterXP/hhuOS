@@ -233,24 +233,32 @@ void System::panic(const InterruptFrame &frame) {
  */
 void System::initializeGlobalDescriptorTables(uint16_t *systemGdt, uint16_t *biosGdt, uint16_t *systemGdtDescriptor, uint16_t *biosGdtDescriptor, uint16_t *physicalGdtDescriptor) {
     // Set first 6 GDT entries to 0
-    Util::Address<uint32_t>(systemGdt).setRange(0, 48);
+    Util::Address<uint64_t>(systemGdt).setRange(0, 48);
 
     // Set first 4 bios GDT entries to 0
-    Util::Address<uint32_t>(biosGdt).setRange(0, 32);
+    Util::Address<uint64_t>(biosGdt).setRange(0, 32);
 
     // first set up general GDT for the system
     // first entry has to be null
     System::createGlobalDescriptorTableEntry(systemGdt, 0, 0, 0, 0, 0);
     // kernel code segment
-    System::createGlobalDescriptorTableEntry(systemGdt, 1, 0, 0xFFFFFFFF, 0x9A, 0x0C);
+    System::createGlobalDescriptorTableEntry(systemGdt, 1, 0, 0xFFFFFFFF, 0x9A, 0x0A);
     // kernel data segment
-    System::createGlobalDescriptorTableEntry(systemGdt, 2, 0, 0xFFFFFFFF, 0x92, 0x0C);
+    System::createGlobalDescriptorTableEntry(systemGdt, 2, 0, 0xFFFFFFFF, 0x92, 0x0A);
     // user code segment
-    System::createGlobalDescriptorTableEntry(systemGdt, 3, 0, 0xFFFFFFFF, 0xFA, 0x0C);
+    System::createGlobalDescriptorTableEntry(systemGdt, 3, 0, 0xFFFFFFFF, 0xFA, 0x0A);
     // user data segment
-    System::createGlobalDescriptorTableEntry(systemGdt, 4, 0, 0xFFFFFFFF, 0xF2, 0x0C);
+    System::createGlobalDescriptorTableEntry(systemGdt, 4, 0, 0xFFFFFFFF, 0xF2, 0x0A);
+	
+	// 32bit kernel code segment
+    System::createGlobalDescriptorTableEntry(systemGdt, 5, 0, 0xFFFFFFFF, 0x9A, 0x0C);
+    // 32bit kernel data segment
+    System::createGlobalDescriptorTableEntry(systemGdt, 6, 0, 0xFFFFFFFF, 0x92, 0x0C);
+	
     // tss segment
-    System::createGlobalDescriptorTableEntry(systemGdt, 5, reinterpret_cast<uint32_t>(&System::taskStateSegment), sizeof(Kernel::TaskStateSegment), 0x89, 0x4);
+    System::createGlobalDescriptorTableEntry(systemGdt, 7, reinterpret_cast<uint32_t>(&System::taskStateSegment), sizeof(Kernel::TaskStateSegment), 0x89, 0x4);
+	
+	
 
     // set up descriptor for GDT
     *((uint16_t *) systemGdtDescriptor) = 6 * 8;

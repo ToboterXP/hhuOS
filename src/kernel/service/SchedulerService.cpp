@@ -47,7 +47,7 @@ Logger SchedulerService::log = Logger::get("Scheduler");
 
 SchedulerService::SchedulerService() {
     defaultFpuContext = static_cast<uint8_t*>(System::getService<MemoryService>().allocateKernelMemory(512, 16));
-    Util::Address<uint32_t>(defaultFpuContext).setRange(0, 512);
+    Util::Address<uint64_t>(defaultFpuContext).setRange(0, 512);
 
     if (Device::Fpu::isAvailable()) {
         log.info("FPU detected -> Enabling FPU context switching");

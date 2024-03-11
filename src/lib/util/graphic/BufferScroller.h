@@ -67,7 +67,7 @@ private:
 
     bool useMmx = false;
     const LinearFrameBuffer &lfb;
-    const Address<uint32_t> &targetBuffer;
+    const Address<uint64_t> &targetBuffer;
 };
 
 }

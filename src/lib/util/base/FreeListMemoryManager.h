@@ -70,27 +70,27 @@ public:
     /**
      * Overriding function from HeapMemoryManager.
      */
-    [[nodiscard]] void* allocateMemory(uint32_t size, uint32_t alignment) override;
+    [[nodiscard]] void* allocateMemory(uint64_t size, uint64_t alignment) override;
 
     /**
      * Overriding function from HeapMemoryManager.
      */
-    [[nodiscard]] void* reallocateMemory(void *ptr, uint32_t size, uint32_t alignment) override;
+    [[nodiscard]] void* reallocateMemory(void *ptr, uint64_t size, uint64_t alignment) override;
 
     /**
      * Overriding function from HeapMemoryManager.
      */
-    void freeMemory(void *ptr, uint32_t alignment) override;
+    void freeMemory(void *ptr, uint64_t alignment) override;
 
     /**
      * Overriding function from MemoryManager.
      */
-    [[nodiscard]] uint32_t getTotalMemory() const override;
+    [[nodiscard]] uint64_t getTotalMemory() const override;
 
     /**
      * Overriding function from MemoryManager.
      */
-    [[nodiscard]] uint32_t getFreeMemory() const override;
+    [[nodiscard]] uint64_t getFreeMemory() const override;
 
     /**
      * Overriding function from MemoryManager.
@@ -111,7 +111,7 @@ private:
     struct FreeListHeader {
         FreeListHeader *prev;
         FreeListHeader *next;
-        uint32_t size;
+        uint64_t size;
     };
 
     /**
@@ -125,7 +125,7 @@ private:
      *
      * @return Pointer to the allocated chunk of memory or nullptr if no chunk with the required size is available
      */
-    void* allocAlgorithm(uint32_t size, uint32_t alignment, FreeListHeader *startChunk);
+    void* allocAlgorithm(uint64_t size, uint64_t alignment, FreeListHeader *startChunk);
 
     /**
      * Implementation of the free algorithm, that is used in the free-functions.
@@ -144,7 +144,7 @@ private:
      *
      * @return Header of the free chunk with the required size or nullptr, if none is found
      */
-    static FreeListHeader* findNext(FreeListHeader *start, uint32_t reqSize);
+    static FreeListHeader* findNext(FreeListHeader *start, uint64_t reqSize);
 
     /**
      * Merge a chunk of free memory with it's neighbours, if possible.
@@ -158,11 +158,11 @@ private:
 
     Util::Async::Spinlock lock;
     FreeListHeader *firstChunk = nullptr;
-    uint32_t unusedMemory = 0;
+    uint64_t unusedMemory = 0;
     bool unmapFreedMemory = true;
 
-    static const constexpr uint32_t MIN_BLOCK_SIZE = 4;
-    static const constexpr uint32_t HEADER_SIZE = sizeof(FreeListHeader);
+    static const constexpr uint64_t MIN_BLOCK_SIZE = 4;
+    static const constexpr uint64_t HEADER_SIZE = sizeof(FreeListHeader);
 };
 
 }

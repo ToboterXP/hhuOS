@@ -43,8 +43,8 @@ Thread::Thread(const Util::String &name, Process &parent, Util::Async::Runnable 
         interruptFrame(*reinterpret_cast<InterruptFrame*>(kernelStack->getStart() - sizeof(InterruptFrame))),
         kernelContext(reinterpret_cast<Context*>(kernelStack->getStart() - sizeof(InterruptFrame) - sizeof(Context))),
         fpuContext(static_cast<uint8_t*>(System::getService<MemoryService>().allocateKernelMemory(512, 16))) {
-    auto source = Util::Address<uint32_t>(System::getService<SchedulerService>().getDefaultFpuContext());
-    Util::Address<uint32_t>(fpuContext).copyRange(source, 512);
+    auto source = Util::Address<uint64_t>(System::getService<SchedulerService>().getDefaultFpuContext());
+    Util::Address<uint64_t>(fpuContext).copyRange(source, 512);
 }
 
 Thread::~Thread() {
@@ -168,7 +168,7 @@ void Thread::unblockJoinList() {
 }
 
 Thread::Stack::Stack(uint8_t *stack, uint32_t size) : stack(stack), size(size) {
-    Util::Address<uint32_t>(stack).setRange(0, size);
+    Util::Address<uint64_t>(stack).setRange(0, size);
 
     this->stack[0] = 0x44; // D
     this->stack[1] = 0x41; // A

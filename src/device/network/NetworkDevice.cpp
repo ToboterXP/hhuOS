@@ -55,8 +55,8 @@ const Util::String& NetworkDevice::getIdentifier() const {
 void NetworkDevice::sendPacket(const uint8_t *packet, uint32_t length) {
     outgoingPacketLock.acquire();
     auto *buffer = reinterpret_cast<uint8_t*>(packetMemoryManager.allocateBlock());
-    auto source = Util::Address<uint32_t>(packet);
-    auto target = Util::Address<uint32_t>(buffer);
+    auto source = Util::Address<uint64_t>(packet);
+    auto target = Util::Address<uint64_t>(buffer);
     target.copyRange(source, length);
 
     outgoingPacketQueue.add(Packet{buffer, length});
@@ -69,8 +69,8 @@ void NetworkDevice::handleIncomingPacket(const uint8_t *packet, uint32_t length)
     }
 
     auto *buffer = reinterpret_cast<uint8_t*>(packetMemoryManager.allocateBlock());
-    auto source = Util::Address<uint32_t>(packet);
-    auto target = Util::Address<uint32_t>(buffer);
+    auto source = Util::Address<uint64_t>(packet);
+    auto target = Util::Address<uint64_t>(buffer);
     target.copyRange(source, length);
 
     if (!incomingPacketQueue.offer(Packet{buffer, length})) {

@@ -35,7 +35,7 @@ void SmBios::copyTables(const void *multibootInfo, uint8_t *destination, uint32_
     copyInfo->copiedBytes = sizeof(CopyInformation);
     copyInfo->success = false;
 
-    auto destinationAddress = Util::Address<uint32_t>(destination + sizeof(CopyInformation));
+    auto destinationAddress = Util::Address<uint64_t>(destination + sizeof(CopyInformation));
     Info info{};
 
     // Search for SMBIOS tables in Multiboot tags
@@ -67,14 +67,14 @@ void SmBios::copyTables(const void *multibootInfo, uint8_t *destination, uint32_
 
     // Copy information struct
     if (copyInfo->copiedBytes + sizeof(Info) > maxBytes) return;
-    destinationAddress.copyRange(Util::Address<uint32_t>(&info), sizeof(Info));
+    destinationAddress.copyRange(Util::Address<uint64_t>(&info), sizeof(Info));
     auto *copiedInfo = reinterpret_cast<Info*>(destinationAddress.get());
     destinationAddress = destinationAddress.add(sizeof(Info));
     copyInfo->copiedBytes += sizeof(Info);
 
     // Copy SMBIOS tables
     if (copyInfo->copiedBytes + copiedInfo->tableLength > maxBytes) return;
-    destinationAddress.copyRange(Util::Address(copiedInfo->tableAddress), copiedInfo->tableLength);
+    destinationAddress.copyRange(Util::Address<uint64_t>(copiedInfo->tableAddress), copiedInfo->tableLength);
     copiedInfo->tableAddress = Kernel::MemoryLayout::PHYSICAL_TO_VIRTUAL(destinationAddress.get());
     copyInfo->copiedBytes += copiedInfo->tableLength;
 
@@ -146,11 +146,11 @@ const Kernel::Multiboot::SmBiosTables* SmBios::findTables(const void *multibootI
 
 const SmBios::EntryPoint* SmBios::searchEntryPoint(uint32_t startAddress, uint32_t endAddress) {
     char signature[sizeof(EntryPoint::smSignature)] = {'_', 'S', 'M', '_'};
-    auto signatureAddress = Util::Address<uint32_t>(signature);
-    startAddress = Util::Address<uint32_t>(startAddress).alignUp(16).get();
+    auto signatureAddress = Util::Address<uint64_t>(signature);
+    startAddress = Util::Address<uint64_t>(startAddress).alignUp(16).get();
 
     for (uint32_t i = startAddress; i <= endAddress - sizeof(signature); i += 16) {
-        auto address = Util::Address<uint32_t>(i);
+        auto address = Util::Address<uint64_t>(i);
         if (address.compareRange(signatureAddress, sizeof(EntryPoint::smSignature)) == 0) {
             if (checkEntryPoint(reinterpret_cast<EntryPoint*>(i))) {
                 return reinterpret_cast<EntryPoint*>(i);
@@ -172,11 +172,11 @@ bool SmBios::checkEntryPoint(SmBios::EntryPoint *entryPoint) {
 
 const SmBios::EntryPoint3* SmBios::searchEntryPoint3(uint32_t startAddress, uint32_t endAddress) {
     char signature[sizeof(EntryPoint3::smSignature)] = {'_', 'S', 'M', '3', '_'};
-    auto signatureAddress = Util::Address<uint32_t>(signature);
-    startAddress = Util::Address<uint32_t>(startAddress).alignUp(16).get();
+    auto signatureAddress = Util::Address<uint64_t>(signature);
+    startAddress = Util::Address<uint64_t>(startAddress).alignUp(16).get();
 
     for (uint32_t i = startAddress; i <= endAddress - sizeof(signature); i += 16) {
-        auto address = Util::Address<uint32_t>(i);
+        auto address = Util::Address<uint64_t>(i);
         if (address.compareRange(signatureAddress, sizeof(EntryPoint3::smSignature)) == 0) {
             if (checkEntryPoint3(reinterpret_cast<EntryPoint3*>(i))) {
                 return reinterpret_cast<EntryPoint3*>(i);

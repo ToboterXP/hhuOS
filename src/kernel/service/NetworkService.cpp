@@ -111,8 +111,8 @@ NetworkService::NetworkService() {
 
         auto *datagramBuffer = reinterpret_cast<uint8_t*>(memoryService.allocateUserMemory(kernelDatagram->getLength()));
 
-        auto source = Util::Address<uint32_t>(kernelDatagram->getData());
-        auto target = Util::Address<uint32_t>(datagramBuffer);
+        auto source = Util::Address<uint64_t>(kernelDatagram->getData());
+        auto target = Util::Address<uint64_t>(datagramBuffer);
         target.copyRange(source, kernelDatagram->getLength());
 
         datagram.setData(datagramBuffer, kernelDatagram->getLength());

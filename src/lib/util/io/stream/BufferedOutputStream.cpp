@@ -48,8 +48,8 @@ void BufferedOutputStream::write(const uint8_t *sourceBuffer, uint32_t offset, u
     }
 
     if (length < (size - position)) {
-        Address<uint32_t> sourceAddress(sourceBuffer + offset);
-        Address<uint32_t> targetAddress(buffer + position);
+        Address<uint64_t> sourceAddress(sourceBuffer + offset);
+        Address<uint64_t> targetAddress(buffer + position);
 
         targetAddress.copyRange(sourceAddress, length);
         position += length;

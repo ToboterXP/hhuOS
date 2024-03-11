@@ -167,8 +167,8 @@ private:
     Util::Async::Spinlock keyboardLock;
 
     Util::Graphic::LinearFrameBuffer &lfb;
-    Util::Address<uint32_t> &lfbAddress;
-    Util::Address<uint32_t> colorBufferAddress;
+    Util::Address<uint64_t> &lfbAddress;
+    Util::Address<uint64_t> colorBufferAddress;
     bool useMmx = false;
 
     bool running = false;

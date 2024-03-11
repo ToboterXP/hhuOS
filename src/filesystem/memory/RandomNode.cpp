@@ -29,7 +29,7 @@ Util::Io::File::Type RandomNode::getType() {
 }
 
 uint64_t RandomNode::readData(uint8_t *targetBuffer, uint64_t pos, uint64_t numBytes) {
-    auto target = Util::Address<uint32_t>(targetBuffer);
+    auto target = Util::Address<uint64_t>(targetBuffer);
     auto random = Util::Math::Random();
 
     for (uint32_t i = 0; i < numBytes; i++) {

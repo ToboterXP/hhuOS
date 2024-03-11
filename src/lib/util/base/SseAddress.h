@@ -67,6 +67,9 @@ class SseAddress<uint16_t>;
 template
 class SseAddress<uint32_t>;
 
+template
+class SseAddress<uint64_t>;
+
 }
 
 #endif

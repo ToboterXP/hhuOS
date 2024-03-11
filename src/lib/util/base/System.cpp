@@ -48,28 +48,28 @@ bool System::call(System::Code code, uint32_t paramCount...) {
 }
 
 void System::call(Code code, bool &result, uint32_t paramCount, va_list args) {
-    auto eaxValue = static_cast<uint32_t>(code | (paramCount << 8));
-    auto ebxValue = reinterpret_cast<uint32_t>(args);
-    auto ecxValue = reinterpret_cast<uint32_t>(&result);
+    auto eaxValue = static_cast<uint64_t>(code | (paramCount << 8));
+    auto ebxValue = reinterpret_cast<uint64_t>(args);
+    auto ecxValue = reinterpret_cast<uint64_t>(&result);
 
     asm volatile (
-            "push %%eax;"
-            "push %%ebx;"
-            "push %%ecx;"
+            "push %%rax;"
+            "push %%rbx;"
+            "push %%rcx;"
 
-            "mov %0, %%eax;"
-            "mov %1, %%ebx;"
-            "mov %2, %%ecx;"
+            "mov %0, %%rax;"
+            "mov %1, %%rbx;"
+            "mov %2, %%rcx;"
             "int $0x86;"
 
-            "pop %%ecx;"
-            "pop %%ebx;"
-            "pop %%eax;"
+            "pop %%rcx;"
+            "pop %%rbx;"
+            "pop %%rax;"
             : :
             "r"(eaxValue),
             "r"(ebxValue),
             "r"(ecxValue)
-            : "eax", "ebx", "ecx");
+            : "rax", "rbx", "rcx");
 }
 
 }

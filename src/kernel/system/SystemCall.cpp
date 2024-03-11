@@ -39,12 +39,13 @@ void SystemCall::plugin() {
 }
 
 void SystemCall::trigger(const Kernel::InterruptFrame &frame) {
-    uint16_t code = frame.eax & 0x000000ff;
+	//TODO: Port to 64bit
+    /*uint16_t code = frame.eax & 0x000000ff;
     uint16_t paramCount = frame.eax >> 8;
     auto params = reinterpret_cast<va_list>(frame.ebx);
     auto &result = *reinterpret_cast<bool*>(frame.ecx);
 
-    result = systemCalls[code](paramCount, params);
+    result = systemCalls[code](paramCount, params);*/
 }
 
 }

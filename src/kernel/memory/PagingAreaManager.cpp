@@ -47,7 +47,7 @@ void PagingAreaManager::refillPool() {
         return;
     }
 
-    for (uint32_t i = 0; i < blockPool.getCapacity(); i++) {
+    for (uint64_t i = 0; i < blockPool.getCapacity(); i++) {
         void *block = BitmapMemoryManager::allocateBlock();
         if (!blockPool.push(block)) {
             BitmapMemoryManager::freeBlock(block);

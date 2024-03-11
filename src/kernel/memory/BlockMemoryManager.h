@@ -49,7 +49,7 @@ public:
 
     virtual void freeBlock(void *pointer) = 0;
 
-    [[nodiscard]] virtual uint32_t getBlockSize() const = 0;
+    [[nodiscard]] virtual uint64_t getBlockSize() const = 0;
 };
 
 }

@@ -98,7 +98,7 @@ private:
 template<typename T>
 const T& Acpi::getTable(const char *signature) {
     for (uint32_t i = 0; i < numTables; i++) {
-        if (Util::Address<uint32_t>(tables[i]->signature).compareRange(Util::Address<uint32_t>(signature), sizeof(Util::Hardware::Acpi::SdtHeader::signature)) == 0) {
+        if (Util::Address<uint64_t>(tables[i]->signature).compareRange(Util::Address<uint64_t>(signature), sizeof(Util::Hardware::Acpi::SdtHeader::signature)) == 0) {
             return *reinterpret_cast<const T*>(tables[i]);
         }
     }

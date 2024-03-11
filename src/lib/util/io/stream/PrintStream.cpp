@@ -46,7 +46,7 @@ void PrintStream::setNumberPadding(uint8_t padding) {
 }
 
 void PrintStream::print(const char *string) {
-    write(reinterpret_cast<const uint8_t*>(string), 0, Address<uint32_t>(string).stringLength());
+    write(reinterpret_cast<const uint8_t*>(string), 0, Address<uint64_t>(string).stringLength());
 }
 
 void PrintStream::print(const String &string) {
@@ -66,8 +66,8 @@ void PrintStream::print(int32_t number) {
     print(static_cast<uint32_t>(number));
 }
 
-void PrintStream::print(uint32_t number) {
-    uint32_t div;
+void PrintStream::print(uint64_t number) {
+    uint64_t div;
     char digit;
     uint8_t currentBase = base;
 
@@ -96,6 +96,10 @@ void PrintStream::print(uint32_t number) {
     print(numberStream.getContent());
 }
 
+void PrintStream::print(uint32_t number) {
+    print(static_cast<uint64_t>(number));
+}
+
 void PrintStream::print(int16_t number) {
     print(static_cast<int32_t>(number));
 }
@@ -113,7 +117,7 @@ void PrintStream::print(uint8_t number) {
 }
 
 void PrintStream::print(void *pointer) {
-    print(reinterpret_cast<uint32_t>(pointer));
+    print(reinterpret_cast<uint64_t>(pointer));
 }
 
 void PrintStream::println() {

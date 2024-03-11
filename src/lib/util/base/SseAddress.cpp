@@ -25,10 +25,10 @@ template<typename T>
 SseAddress<T>::SseAddress(T address) : Address<T>(address) {}
 
 template<>
-SseAddress<uint32_t>::SseAddress(void *pointer) : Address<uint32_t>(pointer) {}
+SseAddress<uint64_t>::SseAddress(void *pointer) : Address<uint64_t>(pointer) {}
 
 template<>
-SseAddress<uint32_t>::SseAddress(const void *pointer) : Address<uint32_t>(pointer) {}
+SseAddress<uint64_t>::SseAddress(const void *pointer) : Address<uint64_t>(pointer) {}
 
 template<typename T>
 SseAddress<T>::SseAddress(const Address<T> &address) : SseAddress(address.get()) {}

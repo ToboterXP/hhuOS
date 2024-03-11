@@ -23,10 +23,10 @@ namespace Kernel {
 
 Logger TableMemoryManager::log = Logger::get("TableMemoryManager");
 
-TableMemoryManager::TableMemoryManager(BitmapMemoryManager &bitmapMemoryManager, uint8_t *startAddress, uint8_t *endAddress, uint32_t blockSize) :
+TableMemoryManager::TableMemoryManager(BitmapMemoryManager &bitmapMemoryManager, uint8_t *startAddress, uint8_t *endAddress, uint64_t blockSize) :
         bitmapMemoryManager(bitmapMemoryManager), startAddress(startAddress), endAddress(endAddress), blockSize(blockSize) {
-    uint32_t memorySize = endAddress - startAddress + 1;
-    uint32_t blockCount = memorySize / blockSize;
+    uint64_t memorySize = endAddress - startAddress + 1;
+    uint64_t blockCount = memorySize / blockSize;
     if (memorySize % blockCount != 0) {
         blockCount++;
     }
@@ -50,9 +50,9 @@ TableMemoryManager::TableMemoryManager(BitmapMemoryManager &bitmapMemoryManager,
     managedMemoryPerAllocationTable = allocationTableEntriesPerBlock * blockSize;
 
     referenceTableArray = new ReferenceTableEntry*[referenceTableSizeInBlocks];
-    for (uint32_t i = 0; i < referenceTableSizeInBlocks; i++) {
+    for (uint64_t i = 0; i < referenceTableSizeInBlocks; i++) {
         referenceTableArray[i] = static_cast<ReferenceTableEntry*>(bitmapMemoryManager.allocateBlock());
-        for (uint32_t j = 0; j < bitmapMemoryManager.getBlockSize() / sizeof(ReferenceTableEntry); j++) {
+        for (uint64_t j = 0; j < bitmapMemoryManager.getBlockSize() / sizeof(ReferenceTableEntry); j++) {
             bool installed = (i * (bitmapMemoryManager.getBlockSize() / sizeof(ReferenceTableEntry)) + j) < allocationTableCount;
             auto &entry = referenceTableArray[i][j];
             entry.setAddress(0);
@@ -65,26 +65,26 @@ void TableMemoryManager::setMemory(uint8_t *start, uint8_t *end, uint16_t useCou
     auto startIndex = calculateIndex(start);
     auto endIndex = calculateIndex(end);
 
-    for (uint32_t i = startIndex.referenceTableArrayIndex; i <= endIndex.referenceTableArrayIndex; i++) {
+    for (uint64_t i = startIndex.referenceTableArrayIndex; i <= endIndex.referenceTableArrayIndex; i++) {
         auto *referenceTable = reinterpret_cast<ReferenceTableEntry*>(referenceTableArray[i]);
-        uint32_t referenceTableStartIndex = (i == startIndex.referenceTableArrayIndex) ? startIndex.referenceTableIndex : 0;
-        uint32_t referenceTableEndIndex = (i == endIndex.referenceTableArrayIndex) ? endIndex.referenceTableIndex : referenceTableEntriesPerBlock - 1;
+        uint64_t referenceTableStartIndex = (i == startIndex.referenceTableArrayIndex) ? startIndex.referenceTableIndex : 0;
+        uint64_t referenceTableEndIndex = (i == endIndex.referenceTableArrayIndex) ? endIndex.referenceTableIndex : referenceTableEntriesPerBlock - 1;
 
-        for (uint32_t j = referenceTableStartIndex; j <= referenceTableEndIndex; j++) {
+        for (uint64_t j = referenceTableStartIndex; j <= referenceTableEndIndex; j++) {
             auto &referenceTableEntry = referenceTable[j];
             referenceTableEntry.acquireLock();
 
-            uint32_t address = referenceTableEntry.getAddress();
+            uint64_t address = referenceTableEntry.getAddress();
             if (address == 0) {
                 void *block = bitmapMemoryManager.allocateBlock();
-                referenceTableEntry.setAddress(reinterpret_cast<uint32_t>(block));
+                referenceTableEntry.setAddress(reinterpret_cast<uint64_t>(block));
             }
 
             auto *allocationTable = reinterpret_cast<AllocationTableEntry*>(referenceTableEntry.getAddress());
-            uint32_t allocationTableStartIndex = (j == referenceTableStartIndex) ? startIndex.allocationTableIndex : 0;
-            uint32_t allocationTableEndIndex = (j == referenceTableEndIndex) ? endIndex.allocationTableIndex : allocationTableEntriesPerBlock - 1;
+            uint64_t allocationTableStartIndex = (j == referenceTableStartIndex) ? startIndex.allocationTableIndex : 0;
+            uint64_t allocationTableEndIndex = (j == referenceTableEndIndex) ? endIndex.allocationTableIndex : allocationTableEntriesPerBlock - 1;
 
-            for (uint32_t k = allocationTableStartIndex; k <= allocationTableEndIndex; k++) {
+            for (uint64_t k = allocationTableStartIndex; k <= allocationTableEndIndex; k++) {
                 auto &allocationTableEntry = allocationTable[k];
                 allocationTableEntry.setReserved(reserved);
                 allocationTableEntry.setUseCount(useCount);
@@ -96,16 +96,16 @@ void TableMemoryManager::setMemory(uint8_t *start, uint8_t *end, uint16_t useCou
 }
 
 TableMemoryManager::TableIndex TableMemoryManager::calculateIndex(uint8_t *address) const {
-    auto *referenceTableAddress = reinterpret_cast<uint8_t*>((reinterpret_cast<uint32_t>(address) / blockSize) * blockSize);
-    auto referenceTableIndex = reinterpret_cast<uint32_t>(referenceTableAddress) / managedMemoryPerAllocationTable;
+    auto *referenceTableAddress = reinterpret_cast<uint8_t*>((reinterpret_cast<uint64_t>(address) / blockSize) * blockSize);
+    auto referenceTableIndex = reinterpret_cast<uint64_t>(referenceTableAddress) / managedMemoryPerAllocationTable;
 
-    auto allocationTableAddress = reinterpret_cast<uint8_t*>(reinterpret_cast<uint32_t>(address) % managedMemoryPerAllocationTable);
-    auto allocationTableIndex = reinterpret_cast<uint32_t>(allocationTableAddress) / blockSize;
+    auto allocationTableAddress = reinterpret_cast<uint8_t*>(reinterpret_cast<uint64_t>(address) % managedMemoryPerAllocationTable);
+    auto allocationTableIndex = reinterpret_cast<uint64_t>(allocationTableAddress) / blockSize;
 
     return { referenceTableIndex / referenceTableEntriesPerBlock, referenceTableIndex % referenceTableEntriesPerBlock, allocationTableIndex };
 }
 
-uint32_t TableMemoryManager::calculateAddress(const TableMemoryManager::TableIndex &index) const {
+uint64_t TableMemoryManager::calculateAddress(const TableMemoryManager::TableIndex &index) const {
     return index.referenceTableArrayIndex * referenceTableEntriesPerBlock * managedMemoryPerAllocationTable
            + index.referenceTableIndex * managedMemoryPerAllocationTable
            + index.allocationTableIndex * blockSize;
@@ -126,10 +126,10 @@ void *TableMemoryManager::allocateBlockAtAddress(void *address) {
     auto *referenceTable = reinterpret_cast<ReferenceTableEntry*>(referenceTableArray[index.referenceTableArrayIndex]);
     auto &referenceTableEntry = referenceTable[index.referenceTableIndex];
 
-    uint32_t allocationTableAddress = referenceTableEntry.getAddress();
+    uint64_t allocationTableAddress = referenceTableEntry.getAddress();
     if (allocationTableAddress == 0) {
         void *block = bitmapMemoryManager.allocateBlock();
-        referenceTableEntry.setAddress(reinterpret_cast<uint32_t>(block));
+        referenceTableEntry.setAddress(reinterpret_cast<uint64_t>(block));
     }
 
     auto *allocationTable = reinterpret_cast<AllocationTableEntry*>(referenceTableEntry.getAddress());
@@ -159,28 +159,28 @@ void *TableMemoryManager::allocateBlockAfterAddress(void *address) {
     auto startIndex = calculateIndex(reinterpret_cast<uint8_t*>(address));
     auto endIndex = calculateIndex(endAddress);
 
-    for (uint32_t i = startIndex.referenceTableArrayIndex; i <= endIndex.referenceTableArrayIndex; i++) {
+    for (uint64_t i = startIndex.referenceTableArrayIndex; i <= endIndex.referenceTableArrayIndex; i++) {
         auto *referenceTable = reinterpret_cast<ReferenceTableEntry*>(referenceTableArray[i]);
-        uint32_t referenceTableStartIndex = (i == startIndex.referenceTableArrayIndex) ? startIndex.referenceTableIndex : 0;
-        uint32_t referenceTableEndIndex = (i == endIndex.referenceTableArrayIndex) ? endIndex.referenceTableIndex : referenceTableEntriesPerBlock - 1;
+        uint64_t referenceTableStartIndex = (i == startIndex.referenceTableArrayIndex) ? startIndex.referenceTableIndex : 0;
+        uint64_t referenceTableEndIndex = (i == endIndex.referenceTableArrayIndex) ? endIndex.referenceTableIndex : referenceTableEntriesPerBlock - 1;
 
-        for (uint32_t j = referenceTableStartIndex; j <= referenceTableEndIndex; j++) {
+        for (uint64_t j = referenceTableStartIndex; j <= referenceTableEndIndex; j++) {
             auto &referenceTableEntry = referenceTable[j];
             if (!referenceTableEntry.tryAcquireLock()) {
                 continue;
             }
 
-            uint32_t allocationTableAddress = referenceTableEntry.getAddress();
+            uint64_t allocationTableAddress = referenceTableEntry.getAddress();
             if (allocationTableAddress == 0) {
                 void *block = bitmapMemoryManager.allocateBlock();
-                referenceTableEntry.setAddress(reinterpret_cast<uint32_t>(block));
+                referenceTableEntry.setAddress(reinterpret_cast<uint64_t>(block));
             }
 
             auto *allocationTable = reinterpret_cast<AllocationTableEntry*>(referenceTableEntry.getAddress());
-            uint32_t allocationTableStartIndex = (j == referenceTableStartIndex) ? startIndex.allocationTableIndex : 0;
-            uint32_t allocationTableEndIndex = (j == referenceTableEndIndex) ? endIndex.allocationTableIndex : allocationTableEntriesPerBlock - 1;
+            uint64_t allocationTableStartIndex = (j == referenceTableStartIndex) ? startIndex.allocationTableIndex : 0;
+            uint64_t allocationTableEndIndex = (j == referenceTableEndIndex) ? endIndex.allocationTableIndex : allocationTableEntriesPerBlock - 1;
 
-            for (uint32_t k = allocationTableStartIndex; k <= allocationTableEndIndex; k++) {
+            for (uint64_t k = allocationTableStartIndex; k <= allocationTableEndIndex; k++) {
                 auto &allocationTableEntry = allocationTable[k];
                 if (allocationTableEntry.isReserved() || allocationTableEntry.getUseCount() > 0) {
                     continue;
@@ -199,19 +199,19 @@ void *TableMemoryManager::allocateBlockAfterAddress(void *address) {
     Util::Exception::throwException(Util::Exception::ILLEGAL_STATE, "TableMemoryManager: Allocation failed!");
 }
 
-uint32_t TableMemoryManager::getTotalMemory() const {
+uint64_t TableMemoryManager::getTotalMemory() const {
     return endAddress - startAddress + 1;
 }
 
-uint32_t TableMemoryManager::getBlockSize() const {
+uint64_t TableMemoryManager::getBlockSize() const {
     return blockSize;
 }
 
-uint32_t TableMemoryManager::getFreeMemory() const {
-    uint32_t freeMemory = 0;
+uint64_t TableMemoryManager::getFreeMemory() const {
+    uint64_t freeMemory = 0;
 
-    for (uint32_t i = 0; i < referenceTableSizeInBlocks; i++) {
-        for (uint32_t j = 0; j < bitmapMemoryManager.getBlockSize() / sizeof(ReferenceTableEntry); j++) {
+    for (uint64_t i = 0; i < referenceTableSizeInBlocks; i++) {
+        for (uint64_t j = 0; j < bitmapMemoryManager.getBlockSize() / sizeof(ReferenceTableEntry); j++) {
             auto referenceTableEntry = referenceTableArray[i][j];
             if (!referenceTableEntry.isInstalled()) {
                 continue;
@@ -223,7 +223,7 @@ uint32_t TableMemoryManager::getFreeMemory() const {
             }
 
             auto *allocationTable = reinterpret_cast<AllocationTableEntry*>(referenceTableEntry.getAddress());
-            for (uint32_t k = 0; k < allocationTableEntriesPerBlock; k++) {
+            for (uint64_t k = 0; k < allocationTableEntriesPerBlock; k++) {
                 auto allocationTableEntry = allocationTable[k];
                 if (allocationTableEntry.getUseCount() == 0) {
                     freeMemory += blockSize;
@@ -244,8 +244,8 @@ uint8_t * TableMemoryManager::getEndAddress() const {
 }
 
 void TableMemoryManager::debugLog() {
-    uint32_t memorySize = endAddress - startAddress + 1;
-    uint32_t blockCount = memorySize / blockSize;
+    uint64_t memorySize = endAddress - startAddress + 1;
+    uint64_t blockCount = memorySize / blockSize;
 
     log.debug("startAddress: [%u]", startAddress);
     log.debug("endAddress: [%u]", endAddress);
@@ -259,8 +259,8 @@ void TableMemoryManager::debugLog() {
     log.debug("referenceTableEntriesPerBlock: [%u]", referenceTableEntriesPerBlock);
     log.debug("referenceTableSizeInBlocks: [%u]", referenceTableSizeInBlocks);
 
-    for (uint32_t i = 0; i < referenceTableSizeInBlocks; i++) {
-        for (uint32_t j = 0; j < bitmapMemoryManager.getBlockSize() / sizeof(ReferenceTableEntry); j++) {
+    for (uint64_t i = 0; i < referenceTableSizeInBlocks; i++) {
+        for (uint64_t j = 0; j < bitmapMemoryManager.getBlockSize() / sizeof(ReferenceTableEntry); j++) {
             auto entry = referenceTableArray[i][j];
             log.debug("Index: [%04u], Allocation Table Address: [0x%08x], Installed: [%B], Locked: [%B]", i * j + j, entry.getAddress(), entry.isInstalled(), entry.isLocked());
             if (entry.getAddress() > 0) {
@@ -270,12 +270,12 @@ void TableMemoryManager::debugLog() {
     }
 }
 
-void TableMemoryManager::printAllocationTable(uint32_t referenceTableArrayIndex, uint32_t referenceTableIndex) {
+void TableMemoryManager::printAllocationTable(uint64_t referenceTableArrayIndex, uint64_t referenceTableIndex) {
     auto referenceTableEntry = referenceTableArray[referenceTableArrayIndex][referenceTableIndex];
     auto *allocationTable = reinterpret_cast<AllocationTableEntry*>(referenceTableEntry.getAddress());
-    for (uint32_t i = 0; i < allocationTableEntriesPerBlock; i++) {
+    for (uint64_t i = 0; i < allocationTableEntriesPerBlock; i++) {
         auto entry = allocationTable[i];
-        uint32_t address = referenceTableArrayIndex * referenceTableEntriesPerBlock * managedMemoryPerAllocationTable + referenceTableIndex * managedMemoryPerAllocationTable + i * blockSize;
+        uint64_t address = referenceTableArrayIndex * referenceTableEntriesPerBlock * managedMemoryPerAllocationTable + referenceTableIndex * managedMemoryPerAllocationTable + i * blockSize;
         log.debug("Index: [%04u], Address: [0x%08x], Used: [%04u], Reserved: [%B]", i, address, entry.getUseCount(), entry.isReserved());
     }
 }

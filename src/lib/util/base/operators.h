@@ -20,16 +20,16 @@
 
 #include <cstdint>
 
-void* operator new(uint32_t size);
-void* operator new[](uint32_t size);
+void* operator new(std::size_t size);
+void* operator new[](std::size_t size);
 void operator delete(void*);
 void operator delete[](void*);
-void *operator new(uint32_t size, void *pointer);
-void *operator new[](uint32_t size, void *pointer);
+void *operator new(std::size_t size, void *pointer);
+void *operator new[](std::size_t size, void *pointer);
 void operator delete(void*, void*);
 void operator delete[](void*, void*);
 
-void operator delete(void *pointer, uint32_t size);
-void operator delete[](void *pointer, uint32_t size);
+void operator delete(void *pointer, std::size_t size);
+void operator delete[](void *pointer, std::size_t size);
 
 #endif

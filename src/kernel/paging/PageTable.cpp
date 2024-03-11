@@ -1,10 +1,14 @@
 #include "PageTable.h"
 
 
+//Functions to manage a 32bit PAE paging structure
+
+
 namespace Kernel {
 
 namespace PageTable {
-	
+
+//Functions for extracting the bit fields from the virtual address	
 uint8_t GetPageDirectoryIndexFromAddress(uint32_t address) {
 	return (address>>30)&0b11;
 }
@@ -18,7 +22,7 @@ uint16_t GetPageIndexFromAddress(uint32_t address) {
 }
 
 
-
+//Functions for accessing the page directory pointer table
 void SetPageDirectoryPointerEntry(PageDirectoryPointerTable* pdpt, uint32_t virtualAddress, PageDirectoryPointerEntry value) {
 	(*pdpt)[GetPageDirectoryIndexFromAddress(virtualAddress)] = value | 1; //automatically marked as present
 }
@@ -28,6 +32,7 @@ PageDirectoryPointerEntry GetPageDirectoryPointerEntry(PageDirectoryPointerTable
 }
 
 
+//Function for accessing the page directory
 void SetPageDirectoryEntry(PageDirectoryPointerTable* pdpt, uint32_t virtualAddress, PageDirectoryEntry value) {
 	PageDirectory* pd = (PageDirectory*)GetPageDirectoryPointerEntry(pdpt, virtualAddress);
 	(*pd) [GetPageTableIndexFromAddress(virtualAddress)] = value;
@@ -39,6 +44,7 @@ PageDirectoryEntry GetPageDirectoryEntry(PageDirectoryPointerTable* pdpt, uint32
 }
 
 
+//Function for accessing the page table
 void SetPageTableEntry(PageDirectoryPointerTable* pdpt, uint32_t virtualAddress, PageTableEntry value) {
 	PageDirectoryEntry pd = GetPageDirectoryEntry(pdpt, virtualAddress);
 	PageTable* pt = reinterpret_cast<PageTable*>(pd & (~0xfff));
@@ -52,6 +58,7 @@ PageTableEntry GetPageTableEntry(PageDirectoryPointerTable* pdpt, uint32_t virtu
 }
 
 
+//Functions for setting up table entries
 PageDirectoryEntry MakePageDirectoryEntry(uint64_t physicalAddress) {
 	return physicalAddress & (~0xfff);
 }
@@ -61,6 +68,7 @@ PageTableEntry MakePageTableEntry(uint64_t physicalAddress) {
 }
 
 
+//Functions for accessing table flags
 bool GetPageDirectoryFlag(PageDirectoryEntry entry, PageDirectoryFlag flag) {
 	return entry & ((uint16_t)flag);
 }

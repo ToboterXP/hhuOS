@@ -41,7 +41,7 @@ void FreeListMemoryManager::initialize(uint8_t *startAddress, uint8_t *endAddres
     }
 }
 
-void* FreeListMemoryManager::allocateMemory(uint32_t size, uint32_t alignment) {
+void* FreeListMemoryManager::allocateMemory(uint64_t size, uint64_t alignment) {
     lock.acquire();
     void *ret = allocAlgorithm(size, alignment, firstChunk);
     lock.release();
@@ -53,13 +53,13 @@ void* FreeListMemoryManager::allocateMemory(uint32_t size, uint32_t alignment) {
     return ret;
 }
 
-void FreeListMemoryManager::freeMemory(void *ptr, uint32_t alignment) {
+void FreeListMemoryManager::freeMemory(void *ptr, uint64_t alignment) {
     lock.acquire();
     freeAlgorithm(ptr);
     lock.release();
 }
 
-FreeListMemoryManager::FreeListHeader* FreeListMemoryManager::findNext(FreeListHeader *start, uint32_t reqSize) {
+FreeListMemoryManager::FreeListHeader* FreeListMemoryManager::findNext(FreeListHeader *start, uint64_t reqSize) {
     // set start point
     FreeListHeader *current = start;
 
@@ -75,7 +75,7 @@ FreeListMemoryManager::FreeListHeader* FreeListMemoryManager::findNext(FreeListH
     return current;
 }
 
-void* FreeListMemoryManager::allocAlgorithm(uint32_t size, uint32_t alignment, FreeListHeader *startChunk) {
+void* FreeListMemoryManager::allocAlgorithm(uint64_t size, uint64_t alignment, FreeListHeader *startChunk) {
     // check for invalid requests
     if (size == 0) {
         return nullptr;
@@ -86,7 +86,7 @@ void* FreeListMemoryManager::allocAlgorithm(uint32_t size, uint32_t alignment, F
     }
 
     // align requested size to 4 byte
-    size = Util::Address<uint32_t>(size).alignUp(sizeof(uint32_t)).get();
+    size = Util::Address<uint64_t>(size).alignUp(sizeof(uint64_t)).get();
 
     FreeListHeader *current = startChunk;
     FreeListHeader *aligned;
@@ -95,7 +95,7 @@ void* FreeListMemoryManager::allocAlgorithm(uint32_t size, uint32_t alignment, F
     while (current != nullptr) {
         if (current->size >= size) {
             auto data = (reinterpret_cast<uint8_t*>(current)) + HEADER_SIZE;
-            auto alignedData = reinterpret_cast<uint8_t*>(Util::Address<uint32_t>(data).alignUp(alignment).get());
+            auto alignedData = reinterpret_cast<uint8_t*>(Util::Address<uint64_t>(data).alignUp(alignment).get());
 
             // Found free Memory Block with required alignment
             if (data == alignedData) {
@@ -233,7 +233,7 @@ void FreeListMemoryManager::freeAlgorithm(void *ptr) {
         auto chunkEndAddr = mergedAddress + (HEADER_SIZE + mergedHeader->size);
 
         // try to unmap the free memory, not the list header!
-        unmap(reinterpret_cast<uint32_t>(mergedAddress + HEADER_SIZE), reinterpret_cast<uint32_t>(chunkEndAddr - 1), 8);
+        unmap(reinterpret_cast<uint64_t>(mergedAddress + HEADER_SIZE), reinterpret_cast<uint64_t>(chunkEndAddr - 1), 8);
     }
 }
 
@@ -277,7 +277,7 @@ FreeListMemoryManager::FreeListHeader* FreeListMemoryManager::merge(FreeListHead
     return origin;
 }
 
-void* FreeListMemoryManager::reallocateMemory(void *ptr, uint32_t size, uint32_t alignment) {
+void* FreeListMemoryManager::reallocateMemory(void *ptr, uint64_t size, uint64_t alignment) {
     void *ret = nullptr;
 
     if (size == 0) {
@@ -288,13 +288,13 @@ void* FreeListMemoryManager::reallocateMemory(void *ptr, uint32_t size, uint32_t
     auto oldHeader = reinterpret_cast<FreeListHeader*>(reinterpret_cast<uint8_t*>(ptr) - HEADER_SIZE);
 
     if (oldHeader->size == size) {
-        if (alignment == 0 || (uint32_t) ptr % alignment == 0) {
+        if (alignment == 0 || (uint64_t) ptr % alignment == 0) {
             return ptr;
         } else {
             ret = allocateMemory(size, alignment);
         }
     } else if (size < oldHeader->size) {
-        if (alignment == 0 || (uint32_t) ptr % alignment == 0) {
+        if (alignment == 0 || (uint64_t) ptr % alignment == 0) {
             if (oldHeader->size - size > MIN_BLOCK_SIZE + HEADER_SIZE) {
                 auto newHeader = reinterpret_cast<FreeListHeader*>(reinterpret_cast<uint8_t*>(ptr) + size);
                 newHeader->size = oldHeader->size - size - HEADER_SIZE;
@@ -310,7 +310,7 @@ void* FreeListMemoryManager::reallocateMemory(void *ptr, uint32_t size, uint32_t
             ret = allocateMemory(size, alignment);
         }
     } else {
-        if (alignment == 0 || (uint32_t) ptr % alignment == 0) {
+        if (alignment == 0 || (uint64_t) ptr % alignment == 0) {
             lock.acquire();
             FreeListHeader *currentChunk = firstChunk;
             FreeListHeader *returnChunk = nullptr;
@@ -326,7 +326,7 @@ void* FreeListMemoryManager::reallocateMemory(void *ptr, uint32_t size, uint32_t
             } while (currentChunk != nullptr && currentChunk < ptr);
 
             if (currentChunk != nullptr) {
-                if (((uint32_t) ptr + oldHeader->size == (uint32_t) currentChunk) &&
+                if (((uint64_t) ptr + oldHeader->size == (uint64_t) currentChunk) &&
                     (oldHeader->size + currentChunk->size + HEADER_SIZE >= size)) {
                     unusedMemory -= currentChunk->size;
 
@@ -367,7 +367,7 @@ void* FreeListMemoryManager::reallocateMemory(void *ptr, uint32_t size, uint32_t
             Util::Exception::throwException(Exception::OUT_OF_BOUNDS, "realloc: Allocated memory outside of heap boundaries");
         }
 
-        Util::Address<uint32_t>(ret).copyRange(Util::Address<uint32_t>(ptr), (size < oldHeader->size) ? size : oldHeader->size);
+        Util::Address<uint64_t>(ret).copyRange(Util::Address<uint64_t>(ptr), (size < oldHeader->size) ? size : oldHeader->size);
         freeMemory(ptr, 0);
     }
 
@@ -378,11 +378,11 @@ uint8_t* FreeListMemoryManager::getStartAddress() const {
     return startAddress;
 }
 
-uint32_t FreeListMemoryManager::getTotalMemory() const {
+uint64_t FreeListMemoryManager::getTotalMemory() const {
     return endAddress - startAddress + 1;
 }
 
-uint32_t FreeListMemoryManager::getFreeMemory() const {
+uint64_t FreeListMemoryManager::getFreeMemory() const {
     return unusedMemory;
 }
 

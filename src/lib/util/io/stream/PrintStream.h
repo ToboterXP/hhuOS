@@ -52,6 +52,8 @@ public:
     void print(const char *string);
 
     void print(bool boolean);
+	
+	void print(uint64_t number);
 
     void print(int32_t number);
 

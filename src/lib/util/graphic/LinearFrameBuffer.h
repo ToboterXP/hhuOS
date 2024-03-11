@@ -60,7 +60,7 @@ public:
      */
     LinearFrameBuffer(void *virtualAddress, uint16_t resolutionX, uint16_t resolutionY, uint8_t colorDepth, uint16_t pitch, bool enableAcceleration = true);
 
-    LinearFrameBuffer(Util::Address<uint32_t> *address, uint16_t resolutionX, uint16_t resolutionY, uint8_t colorDepth, uint16_t pitch);
+    LinearFrameBuffer(Util::Address<uint64_t> *address, uint16_t resolutionX, uint16_t resolutionY, uint8_t colorDepth, uint16_t pitch);
 
     explicit LinearFrameBuffer(Io::File &file, bool enableAcceleration = true);
 
@@ -112,7 +112,7 @@ public:
      *
      * @return The buffer address
      */
-    [[nodiscard]] const Address<uint32_t>& getBuffer() const;
+    [[nodiscard]] const Address<uint64_t>& getBuffer() const;
 
     /**
      * Read the color of a pixel at a given position.
@@ -128,7 +128,7 @@ public:
 private:
 
     bool useMmx = false;
-    Address<uint32_t> *buffer = nullptr;
+    Address<uint64_t> *buffer = nullptr;
 
     uint16_t resolutionX = 0;
     uint16_t resolutionY = 0;

@@ -37,7 +37,7 @@ public:
     /**
      * Constructor.
      */
-    BitmapMemoryManager(uint8_t *startAddress, uint8_t *endAddress, uint32_t blockSize = 4096, bool zeroMemory = false);
+    BitmapMemoryManager(uint8_t *startAddress, uint8_t *endAddress, uint64_t blockSize = 4096, bool zeroMemory = false);
 
     /**
      * Copy Constructor.
@@ -60,11 +60,11 @@ public:
 
     virtual void handleError();
 
-    [[nodiscard]] uint32_t getTotalMemory() const override;
+    [[nodiscard]] uint64_t getTotalMemory() const override;
 
-    [[nodiscard]] uint32_t getFreeMemory() const override;
+    [[nodiscard]] uint64_t getFreeMemory() const override;
 
-    [[nodiscard]] uint32_t getBlockSize() const override;
+    [[nodiscard]] uint64_t getBlockSize() const override;
 
     [[nodiscard]] uint8_t* getStartAddress() const override;
 
@@ -72,15 +72,15 @@ public:
 
 protected:
 
-    void setRange(uint32_t startBlock, uint32_t blockCount);
+    void setRange(uint64_t startBlock, uint64_t blockCount);
 
 private:
 
     uint8_t *startAddress;
     uint8_t *endAddress;
-    uint32_t freeMemory;
+    uint64_t freeMemory;
 
-    uint32_t blockSize;
+    uint64_t blockSize;
     bool zeroMemory = false;
 
     Util::Async::AtomicBitmap bitmap;

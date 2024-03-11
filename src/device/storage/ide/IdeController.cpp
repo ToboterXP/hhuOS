@@ -579,8 +579,8 @@ uint16_t IdeController::performDmaIO(const IdeController::DeviceInfo &info, IdeC
     auto dmaMemoryPhysical = reinterpret_cast<uint32_t>(memoryService.getPhysicalAddress(dmaMemoryVirtual));
 
     if (mode == WRITE) {
-        auto source = Util::Address<uint32_t>(buffer);
-        auto target = Util::Address<uint32_t>(dmaMemoryVirtual);
+        auto source = Util::Address<uint64_t>(buffer);
+        auto target = Util::Address<uint64_t>(dmaMemoryVirtual);
         target.copyRange(source, size);
     }
 
@@ -651,8 +651,8 @@ uint16_t IdeController::performDmaIO(const IdeController::DeviceInfo &info, IdeC
     }
 
     if (mode == READ) {
-        auto source = Util::Address<uint32_t>(dmaMemoryVirtual);
-        auto target = Util::Address<uint32_t>(buffer);
+        auto source = Util::Address<uint64_t>(dmaMemoryVirtual);
+        auto target = Util::Address<uint64_t>(buffer);
         target.copyRange(source, size);
     }
 

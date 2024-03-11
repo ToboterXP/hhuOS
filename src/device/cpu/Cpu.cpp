@@ -93,12 +93,12 @@ Util::Array<Cpu::Configuration0> Cpu::readCr0() {
     auto cr0 = Util::ArrayList<Configuration0>();
     uint32_t cr0Bits = 0;
     asm volatile (
-            "mov %%cr0, %%eax;"
-            "mov %%eax, (%0);"
+            "movq %%cr0, %%rax;"
+            "movq %%rax, (%0);"
             : :
             "r"(&cr0Bits)
             :
-            "eax"
+            "rax"
             );
 
     uint32_t i;

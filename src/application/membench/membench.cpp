@@ -32,7 +32,7 @@
 
 static const constexpr uint32_t BUFFER_SIZE = 1024 * 1024;
 
-void benchmark(uint32_t iterations, const Util::Address<uint32_t> &source, const Util::Address<uint32_t> &target, uint32_t &memsetResult, uint32_t &memcpyResult) {
+void benchmark(uint32_t iterations, const Util::Address<uint64_t> &source, const Util::Address<uint64_t> &target, uint32_t &memsetResult, uint32_t &memcpyResult) {
     auto start = Util::Time::getSystemTime().toMilliseconds();
     for (uint32_t i = 0; i < iterations; i++) {
         target.setRange(i, BUFFER_SIZE);
@@ -67,12 +67,12 @@ int32_t main(int32_t argc, char *argv[]) {
     Util::Io::PrintStream resultWriter(resultStream);
     
     Util::System::out << "Ensuring buffers are mapped in..." << Util::Io::PrintStream::endl << Util::Io::PrintStream::flush;
-    Util::Address<uint32_t>(buffer1).setRange(0, BUFFER_SIZE);
-    Util::Address<uint32_t>(buffer2).setRange(0, BUFFER_SIZE);
+    Util::Address<uint64_t>(buffer1).setRange(0, BUFFER_SIZE);
+    Util::Address<uint64_t>(buffer2).setRange(0, BUFFER_SIZE);
 
     uint32_t memsetResult, memcpyResult;
     Util::System::out << "Running memory benchmarks without extensions..." << Util::Io::PrintStream::endl << Util::Io::PrintStream::flush;
-    benchmark(iterations, Util::Address<uint32_t>(buffer1), Util::Address<uint32_t>(buffer2), memsetResult, memcpyResult);
+    benchmark(iterations, Util::Address<uint64_t>(buffer1), Util::Address<uint64_t>(buffer2), memsetResult, memcpyResult);
     resultWriter << "Without extensions:" << Util::Io::PrintStream::endl
                  << "memset: " << memsetResult << "ms" << Util::Io::PrintStream::endl
                  << "memcpy: " << memcpyResult << "ms" << Util::Io::PrintStream::endl;

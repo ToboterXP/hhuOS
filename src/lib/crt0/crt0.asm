@@ -22,14 +22,14 @@ section .text
 ; Entry point
 _start:
     ; Initialize memory manager
-    push ecx
-    push ebx
-    push eax
+    push rcx
+    push rbx
+    push rax
 
     push 0xbfffefff        ; Push second parameter (endAddress) on the stack
-    push edx               ; Push first parameter (startAddress) on the stack
+    push rdx               ; Push first parameter (startAddress) on the stack
     call initMemoryManager
-    add esp,8
+    add rsp,8
 
     ; Initialize bss
     call clear_bss
@@ -45,8 +45,8 @@ _start:
     ;mov eax,[argc]  ; Push first parameter (argc) on the stack
     ;push eax
     call main
-    add esp,12
-    push eax      ; Get return value from eax
+    add rsp,12
+    push rax      ; Get return value from eax
 
     ; Cleanup static variables and exit process
     call _fini

@@ -76,10 +76,10 @@ endif ()
 
 # Set compiler-flags
 ENABLE_LANGUAGE(ASM_NASM)
-set(CMAKE_ASM_NASM_OBJECT_FORMAT "elf32")
+set(CMAKE_ASM_NASM_OBJECT_FORMAT "elf64")
 set(CMAKE_ASM_NASM_INCLUDES "${HHUOS_SRC_DIR}/")
 set(CMAKE_ASM_NASM_COMPILE_OBJECT "<CMAKE_ASM_NASM_COMPILER> -I${CMAKE_ASM_NASM_INCLUDES} -f ${CMAKE_ASM_NASM_OBJECT_FORMAT} -o <OBJECT> <SOURCE>")
-set(CMAKE_C_FLAGS "-m32 -march=i386 -mfpmath=387 -mno-mmx -mno-sse -mno-avx -Wall -fno-stack-protector -nostdlib -fno-pic -no-pie -ffreestanding")
+set(CMAKE_C_FLAGS "-m64  -O2 -march=x86-64 -mfpmath=387 -mno-avx -Wall -fpermissive -fno-stack-protector -nostdlib -fno-pic -no-pie -ffreestanding -mcmodel=large ")
 if(CMAKE_C_COMPILER_VERSION VERSION_GREATER_EQUAL 9)
     set(CMAKE_C_FLAGS "${CMAKE_C_FLAGS} -mmanual-endbr")
 endif()
@@ -125,7 +125,7 @@ add_subdirectory(grub)
 add_subdirectory(limine)
 add_subdirectory(towboot)
 
-add_subdirectory(application)
+#add_subdirectory(application)
 
 add_subdirectory(asciimation)
 add_subdirectory(music)

@@ -150,8 +150,8 @@ FilesystemService::FilesystemService() {
 
         for (uint32_t i = 0; i < children.length(); i++) {
             targetChildren[i] = static_cast<char*>(memoryService.allocateUserMemory((children[i].length() + 1) * sizeof(char)));
-            auto source = Util::Address<uint32_t>(static_cast<const char*>(children[i]));
-            auto target = Util::Address<uint32_t>(targetChildren[i]);
+            auto source = Util::Address<uint64_t>(static_cast<const char*>(children[i]));
+            auto target = Util::Address<uint64_t>(targetChildren[i]);
             target.copyString(source);
         }
 
@@ -225,8 +225,8 @@ FilesystemService::FilesystemService() {
         auto path = processService.getCurrentProcess().getWorkingDirectory().getCanonicalPath();
 
         targetPath = static_cast<char*>(memoryService.allocateUserMemory((path.length() + 1) * sizeof(char)));
-        auto source = Util::Address<uint32_t>(static_cast<char*>(path));
-        auto target = Util::Address<uint32_t>(targetPath);
+        auto source = Util::Address<uint64_t>(static_cast<char*>(path));
+        auto target = Util::Address<uint64_t>(targetPath);
         target.copyString(source);
 
         return true;

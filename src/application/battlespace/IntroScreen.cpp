@@ -45,7 +45,7 @@ void IntroScreen::initializeBackground(Util::Game::Graphics &graphics) {
     graphics.clear();
     graphics.setColor(Util::Graphic::Colors::GREEN);
     for (uint32_t i = 0; i < lines; i++) {
-        auto x = static_cast<uint16_t>(centerX - (Util::Address<uint32_t>(INTRO_TEXT[i]).stringLength() * graphics.getCharWidth()) / 2.0);
+        auto x = static_cast<uint16_t>(centerX - (Util::Address<uint64_t>(INTRO_TEXT[i]).stringLength() * graphics.getCharWidth()) / 2.0);
         graphics.drawString(Util::Math::Vector2D(x, y + i * graphics.getCharHeight()), INTRO_TEXT[i]);
     }
 }

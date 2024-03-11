@@ -21,12 +21,12 @@
 
 namespace Kernel {
 
-BitmapMemoryManager::BitmapMemoryManager(uint8_t *startAddress, uint8_t *endAddress, uint32_t blockSize, bool zeroMemory) :
+BitmapMemoryManager::BitmapMemoryManager(uint8_t *startAddress, uint8_t *endAddress, uint64_t blockSize, bool zeroMemory) :
         startAddress(startAddress), endAddress(endAddress), freeMemory(endAddress - startAddress + 1),
         blockSize(blockSize), zeroMemory(zeroMemory), bitmap((endAddress - startAddress + 1) / blockSize) {}
 
 void *BitmapMemoryManager::allocateBlock() {
-    uint32_t block = bitmap.findAndSet();
+    uint64_t block = bitmap.findAndSet();
 
     if (block == bitmap.getSize()) {
         handleError();
@@ -38,7 +38,7 @@ void *BitmapMemoryManager::allocateBlock() {
     void *address = reinterpret_cast<void *>(startAddress + block * blockSize);
 
     if (zeroMemory) {
-        Util::Address<uint32_t>(address).setRange(0, blockSize);
+        Util::Address<uint64_t>(address).setRange(0, blockSize);
     }
 
     return address;
@@ -61,8 +61,8 @@ void BitmapMemoryManager::handleError() {
     Util::Exception::throwException(Util::Exception::ILLEGAL_STATE, "BitmapMemoryManager: Out of memory!");
 }
 
-void BitmapMemoryManager::setRange(uint32_t startBlock, uint32_t blockCount) {
-    for(uint32_t i = 0; i < blockCount; i++) {
+void BitmapMemoryManager::setRange(uint64_t startBlock, uint64_t blockCount) {
+    for(uint64_t i = 0; i < blockCount; i++) {
         if(startBlock + i >= bitmap.getSize()) {
             return;
         }
@@ -73,15 +73,15 @@ void BitmapMemoryManager::setRange(uint32_t startBlock, uint32_t blockCount) {
     freeMemory -= blockCount * blockSize;
 }
 
-uint32_t BitmapMemoryManager::getTotalMemory() const {
+uint64_t BitmapMemoryManager::getTotalMemory() const {
     return endAddress - startAddress + 1;
 }
 
-uint32_t BitmapMemoryManager::getFreeMemory() const {
+uint64_t BitmapMemoryManager::getFreeMemory() const {
     return freeMemory;
 }
 
-uint32_t BitmapMemoryManager::getBlockSize() const {
+uint64_t BitmapMemoryManager::getBlockSize() const {
     return blockSize;
 }
 

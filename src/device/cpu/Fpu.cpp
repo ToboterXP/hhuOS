@@ -41,11 +41,11 @@ Fpu::Fpu(const uint8_t *defaultFpuContext) {
 
     // Make sure FPU emulation is disabled
     asm volatile (
-            "mov %%cr0, %%eax;"
-            "and $0xfffffffb, %%eax;"
-            "mov %%eax, %%cr0;"
+            "movq %%cr0, %%rax;"
+            "andq $0xfffffffffffffffb, %%rax;"
+            "movq %%rax, %%cr0;"
             : : :
-            "eax"
+            "rax"
             );
 
     if (Device::Fpu::isFxsrAvailable()) {
@@ -59,11 +59,11 @@ Fpu::Fpu(const uint8_t *defaultFpuContext) {
         if (features.contains(Util::Hardware::CpuId::SSE)) {
             log.info("SSE support detected -> Activating OSFXSR and OSXMMEXCPT");
             asm volatile (
-                    "mov %%cr4, %%eax;"
-                    "or $0x00000600, %%eax;"
-                    "mov %%eax, %%cr4;"
+                    "movq %%cr4, %%rax;"
+                    "or $0x00000600, %%rax;"
+                    "movq %%rax, %%cr4;"
                     : : :
-                    "eax"
+                    "rax"
                     );
         }
 
@@ -140,15 +140,15 @@ bool Fpu::isFxsrAvailable() {
 bool Fpu::probeFpu() {
     uint16_t fpuStatus = 0x1797;
     asm volatile (
-            "mov %%cr0, %%eax;"
-            "and $0xfffffff3, %%eax;"
-            "mov %%eax, %%cr0;"
+            "movq %%cr0, %%rax;"
+            "andq $0xfffffffffffffff3, %%rax;"
+            "movq %%rax, %%cr0;"
             "fninit;"
             "fnstsw (%0);"
             : :
             "r"(&fpuStatus)
             :
-            "eax"
+            "rax"
             );
 
     return fpuStatus == 0;
@@ -188,21 +188,21 @@ void Fpu::switchContextFpuOnly(Kernel::Thread &currentThread) {
 
 void Fpu::armFpuMonitor() {
     asm volatile (
-            "mov %%cr0, %%eax;"
-            "or $0xa, %%eax;"
-            "mov %%eax, %%cr0;"
+            "movq %%cr0, %%rax;"
+            "or $0xa, %%rax;"
+            "movq %%rax, %%cr0;"
             : : :
-            "%eax"
+            "%rax"
             );
 }
 
 void Fpu::disarmFpuMonitor() {
     asm volatile (
-            "mov %%cr0, %%eax;"
-            "and $0xfffffff7, %%eax;"
-            "mov %%eax, %%cr0;"
+            "movq %%cr0, %%rax;"
+            "andq $0xfffffffffffffff7, %%rax;"
+            "movq %%rax, %%cr0;"
             : : :
-            "%eax"
+            "%rax"
             );
 }
 

@@ -56,34 +56,34 @@ void* realloc(void *pointer, uint32_t size) {
 }
 }
 
-uint32_t strlen(const char *str) noexcept {
-    return Util::Address<uint32_t>(str).stringLength();
+size_t strlen(const char *str) noexcept {
+    return Util::Address<uint64_t>(str).stringLength();
 }
 
 char* strcpy(char *dest, const char *src) noexcept {
-    Util::Address<uint32_t>(dest).copyString(Util::Address<uint32_t>(src));
+    Util::Address<uint64_t>(dest).copyString(Util::Address<uint64_t>(src));
     return dest;
 }
 
 int32_t strcmp(const char *str1, const char *str2) noexcept {
-    return Util::Address<uint32_t>(str1).compareString(Util::Address<uint32_t>(str2));
+    return Util::Address<uint64_t>(str1).compareString(Util::Address<uint64_t>(str2));
 }
 
 int32_t memcmp(const void *str1, const void *str2, uint32_t n) {
-    return Util::Address<uint32_t>(str1).compareRange(Util::Address<uint32_t>(str2), n);
+    return Util::Address<uint64_t>(str1).compareRange(Util::Address<uint64_t>(str2), n);
 }
 
 char* strcat(char *dest, const char *src) {
-    auto targetAddress = Util::Address<uint32_t>(dest);
+    auto targetAddress = Util::Address<uint64_t>(dest);
     targetAddress = targetAddress.add(targetAddress.stringLength());
-    targetAddress.copyString(Util::Address<uint32_t>(src));
+    targetAddress.copyString(Util::Address<uint64_t>(src));
     return dest;
 }
 
 LvglDriver::LvglDriver(Util::Graphic::LinearFrameBuffer &lfb) :
         bufferSize(lfb.getPitch() * lfb.getResolutionY()),
         colorBuffer(new lv_color_t[bufferSize]), lfb(lfb),
-        lfbAddress(*Util::Address<uint32_t>::createAcceleratedAddress(lfb.getBuffer().get(), useMmx)),
+        lfbAddress(*Util::Address<uint64_t>::createAcceleratedAddress(lfb.getBuffer().get(), useMmx)),
         colorBufferAddress(colorBuffer) {}
 
 LvglDriver::~LvglDriver() {

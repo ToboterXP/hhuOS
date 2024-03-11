@@ -67,6 +67,9 @@ class MmxAddress<uint16_t>;
 template
 class MmxAddress<uint32_t>;
 
+template
+class MmxAddress<uint64_t>;
+
 }
 
 #endif

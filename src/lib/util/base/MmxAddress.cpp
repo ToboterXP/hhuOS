@@ -25,10 +25,10 @@ template<typename T>
 MmxAddress<T>::MmxAddress(T address) : Address<T>(address) {}
 
 template<>
-MmxAddress<uint32_t>::MmxAddress(void *pointer) : Address<uint32_t>(pointer) {}
+MmxAddress<uint64_t>::MmxAddress(void *pointer) : Address<uint64_t>(pointer) {}
 
 template<>
-MmxAddress<uint32_t>::MmxAddress(const void *pointer) : Address<uint32_t>(pointer) {}
+MmxAddress<uint64_t>::MmxAddress(const void *pointer) : Address<uint64_t>(pointer) {}
 
 template<typename T>
 MmxAddress<T>::MmxAddress(const Address<T> &address) : MmxAddress(address.get()) {}

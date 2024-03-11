@@ -56,9 +56,9 @@ void Bios::init() {
         Util::Exception::throwException(Util::Exception::UNSUPPORTED_OPERATION,"BIOS-calls are deactivated! Set 'bios=true', to activate them.");
     }
 
-    const auto sourceAddress = Util::Address<uint32_t>(reinterpret_cast<uint32_t>(&bios_call_16_start));
+    const auto sourceAddress = Util::Address<uint64_t>(reinterpret_cast<uint64_t>(&bios_call_16_start));
     const auto targetAddress = Kernel::MemoryLayout::BIOS_CALL_CODE_AREA.toVirtual().toAddress();
-    const auto size = reinterpret_cast<uint32_t>(&bios_call_16_end) - reinterpret_cast<uint32_t>(&bios_call_16_start);
+    const auto size = reinterpret_cast<uint64_t>(&bios_call_16_end) - reinterpret_cast<uint64_t>(&bios_call_16_start);
     targetAddress.copyRange(sourceAddress, size);
 
     const auto realModeIdtAddress = Kernel::MemoryLayout::BIOS_CALL_IDT.toVirtual().toAddress();
@@ -79,7 +79,7 @@ Bios::RealModeContext Bios::interrupt(int interruptNumber, const RealModeContext
     *biosContext = context;
 
     // Write number of bios interrupt manually into code
-    auto interruptNumberAddress = Kernel::MemoryLayout::BIOS_CALL_CODE_AREA.toVirtual().toAddress().add(reinterpret_cast<uint32_t>(&bios_call_16_interrupt) - reinterpret_cast<uint32_t>(&bios_call_16_start));
+    auto interruptNumberAddress = Kernel::MemoryLayout::BIOS_CALL_CODE_AREA.toVirtual().toAddress().add(reinterpret_cast<uint64_t>(&bios_call_16_interrupt) - reinterpret_cast<uint64_t>(&bios_call_16_start));
     interruptNumberAddress.setByte(interruptNumber, 1);
 
     auto &interruptService = Kernel::System::getService<Kernel::InterruptService>();

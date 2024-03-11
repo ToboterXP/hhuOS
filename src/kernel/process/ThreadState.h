@@ -23,11 +23,11 @@
 namespace Kernel {
 
 struct Context {
-    uint32_t edi;
-    uint32_t esi;
-    uint32_t ebx;
-    uint32_t ebp;
-    uint32_t eip;
+    uint64_t edi;
+    uint64_t esi;
+    uint64_t ebx;
+    uint64_t ebp;
+    uint64_t eip;
 } __attribute__((packed));
 
 struct InterruptFrame {
@@ -39,21 +39,21 @@ struct InterruptFrame {
     uint16_t pad4;
     uint16_t ds;
     uint16_t pad3;
-    uint32_t edi;
-    uint32_t esi;
-    uint32_t ebp;
-    uint32_t esp;
-    uint32_t ebx;
-    uint32_t edx;
-    uint32_t ecx;
-    uint32_t eax;
-    uint32_t interrupt;
-    uint32_t error;
-    uint32_t eip;
+    uint64_t edi;
+    uint64_t esi;
+    uint64_t ebp;
+    uint64_t esp;
+    uint64_t ebx;
+    uint64_t edx;
+    uint64_t ecx;
+    uint64_t eax;
+    uint64_t interrupt;
+    uint64_t error;
+    uint64_t eip;
     uint16_t cs;
     uint16_t pad2;
-    uint32_t eflags;
-    uint32_t uesp;
+    uint64_t eflags;
+    uint64_t uesp;
     uint16_t ss;
     uint16_t pad1;
 } __attribute__((packed));

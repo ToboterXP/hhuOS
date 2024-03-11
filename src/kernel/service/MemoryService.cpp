@@ -185,10 +185,11 @@ uint32_t Kernel::MemoryService::unmap(uint32_t virtualAddress) {
     pageFrameAllocator.freeBlock(reinterpret_cast<void*>(physAddress));
 
     // Invalidate entry in TLB
-    asm volatile("push %%edx;"
-                 "movl %0,%%edx;"
-                 "invlpg (%%edx);"
-                 "pop %%edx;"  : : "r"(virtualAddress));
+	//TODO: Port to 64 bit
+    /*asm volatile("push %%rdx;"
+                 "mov %0,%%rdx;"
+                 "invlpg (%%rdx);"
+                 "pop %%rdx;"  : : "r"(virtualAddress));*/
 
     return physAddress;
 }
@@ -346,9 +347,9 @@ void MemoryService::plugin() {
 
 void MemoryService::trigger(const Kernel::InterruptFrame &frame) {
     // Get page fault address and flags
-    uint32_t faultAddress = 0;
+    uint64_t faultAddress = 0;
     // The faulted linear address is loaded in the cr2 register
-    asm volatile ("mov %%cr2, %0" : "=r" (faultAddress));
+    asm volatile ("movq %%cr2, %0": "=r" (faultAddress));
 
     // There should be no access to the first page (address 0)
     if (faultAddress == 0) {

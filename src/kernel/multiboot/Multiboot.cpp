@@ -174,8 +174,8 @@ void Multiboot::copyMultibootInfo(const Info *source, uint8_t *destination, uint
         copyInfo->success = false;
     }
 
-    auto destinationAddress = Util::Address<uint32_t>(destination + sizeof(CopyInformation));
-    destinationAddress.copyRange(Util::Address<uint32_t>(source), toCopy);
+    auto destinationAddress = Util::Address<uint64_t>(destination + sizeof(CopyInformation));
+    destinationAddress.copyRange(Util::Address<uint64_t>(source), toCopy);
     copyInfo->copiedBytes += toCopy;
 }
 

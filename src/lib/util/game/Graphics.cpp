@@ -272,7 +272,7 @@ void Graphics::show() const {
     if (backgroundBuffer == nullptr) {
         lfb.clear();
     } else if (Math::Vector2D(cameraPosition.getX(), cameraPosition.getY()) == Math::Vector2D(0, 0)) {
-        auto source = Address<uint32_t>(backgroundBuffer);
+        auto source = Address<uint64_t>(backgroundBuffer);
         lfb.getBuffer().copyRange(source, lfb.getResolutionY() * lfb.getPitch());
     } else {
         auto pitch = lfb.getPitch();
@@ -283,11 +283,11 @@ void Graphics::show() const {
         for (uint32_t i = 0; i < lfb.getResolutionY(); i++) {
             auto yOffset = pitch * i;
 
-            auto source = Address<uint32_t>(backgroundBuffer + yOffset + xOffset);
+            auto source = Address<uint64_t>(backgroundBuffer + yOffset + xOffset);
             auto target = lfb.getBuffer().add(yOffset);
             target.copyRange(source, pitch - xOffset);
 
-            source = Address<uint32_t>(backgroundBuffer + yOffset);
+            source = Address<uint64_t>(backgroundBuffer + yOffset);
             target = lfb.getBuffer().add(yOffset + (pitch - xOffset));
             target.copyRange(source, pitch - (pitch - xOffset));
         }
@@ -307,7 +307,7 @@ void Graphics::saveCurrentStateAsBackground() {
         backgroundBuffer = new uint8_t[lfb.getPitch() * lfb.getResolutionY()];
     }
 
-    Address<uint32_t>(backgroundBuffer).copyRange(lfb.getBuffer(), lfb.getPitch() * lfb.getResolutionY());
+    Address<uint64_t>(backgroundBuffer).copyRange(lfb.getBuffer(), lfb.getPitch() * lfb.getResolutionY());
 }
 
 void Graphics::clearBackground() {

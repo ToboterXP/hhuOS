@@ -67,7 +67,7 @@ private:
 
     Util::Pool<void> blockPool;
 
-    static const constexpr uint32_t BLOCK_POOL_SIZE = 128;
+    static const constexpr uint64_t BLOCK_POOL_SIZE = 128;
 
 };
 

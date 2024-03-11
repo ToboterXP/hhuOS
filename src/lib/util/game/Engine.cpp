@@ -114,7 +114,7 @@ void Engine::initializeNextScene() {
     }
 
     auto resolution = GameManager::getAbsoluteResolution();
-    auto stringPosition = Math::Vector2D((resolution.getX() - Util::Address<uint32_t>(LOADING).stringLength() * graphics.getCharWidth()) / 2.0, resolution.getY() / 2.0);
+    auto stringPosition = Math::Vector2D((resolution.getX() - Util::Address<uint64_t>(LOADING).stringLength() * graphics.getCharWidth()) / 2.0, resolution.getY() / 2.0);
 
     graphics.clear();
     graphics.setColor(Graphic::Colors::WHITE);

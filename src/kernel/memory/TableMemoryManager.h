@@ -34,7 +34,7 @@ public:
     /**
      * Constructor.
      */
-    TableMemoryManager(BitmapMemoryManager &bitmapMemoryManager, uint8_t *startAddress, uint8_t *endAddress, uint32_t blockSize = 4096);
+    TableMemoryManager(BitmapMemoryManager &bitmapMemoryManager, uint8_t *startAddress, uint8_t *endAddress, uint64_t blockSize = 4096);
 
     /**
      * Copy Constructor.
@@ -61,11 +61,11 @@ public:
 
     void freeBlock(void *pointer) override;
 
-    [[nodiscard]] uint32_t getTotalMemory() const override;
+    [[nodiscard]] uint64_t getTotalMemory() const override;
 
-    [[nodiscard]] uint32_t getBlockSize() const override;
+    [[nodiscard]] uint64_t getBlockSize() const override;
 
-    [[nodiscard]] uint32_t getFreeMemory() const override;
+    [[nodiscard]] uint64_t getFreeMemory() const override;
 
     [[nodiscard]] uint8_t* getStartAddress() const override;
 
@@ -75,7 +75,7 @@ public:
 
 private:
 
-    void printAllocationTable(uint32_t referenceTableArrayIndex, uint32_t referenceTableIndex);
+    void printAllocationTable(uint64_t referenceTableArrayIndex, uint64_t referenceTableIndex);
 
     struct ReferenceTableEntry {
 
@@ -86,14 +86,14 @@ private:
          * 3:      installed
          * 4-31:   address
          */
-        uint32_t value;
+        uint64_t value;
 
     public:
 
-        void setAddress(uint32_t address) {
-            auto valueWrapper = Util::Async::Atomic<uint32_t>(value);
-            uint32_t oldValue;
-            uint32_t exchangeValue;
+        void setAddress(uint64_t address) {
+            auto valueWrapper = Util::Async::Atomic<uint64_t>(value);
+            uint64_t oldValue;
+            uint64_t exchangeValue;
 
             do {
                 oldValue = valueWrapper.get();
@@ -102,7 +102,7 @@ private:
         }
 
         void setInstalled(bool installed) {
-            auto valueWrapper = Util::Async::Atomic<uint32_t>(value);
+            auto valueWrapper = Util::Async::Atomic<uint64_t>(value);
             if (installed) {
                 valueWrapper.bitSet(3);
             } else {
@@ -115,27 +115,27 @@ private:
         }
 
         bool tryAcquireLock() {
-            auto valueWrapper = Util::Async::Atomic<uint32_t>(value);
+            auto valueWrapper = Util::Async::Atomic<uint64_t>(value);
             return !valueWrapper.bitTestAndSet(2);
         }
 
         void releaseLock() {
-            auto valueWrapper = Util::Async::Atomic<uint32_t>(value);
+            auto valueWrapper = Util::Async::Atomic<uint64_t>(value);
             valueWrapper.bitReset(2);
         }
 
-        [[nodiscard]] uint32_t getAddress() {
-            auto valueWrapper = Util::Async::Atomic<uint32_t>(value);
+        [[nodiscard]] uint64_t getAddress() {
+            auto valueWrapper = Util::Async::Atomic<uint64_t>(value);
             return valueWrapper.get() & 0xfffffff0;
         }
 
         [[nodiscard]] bool isInstalled() {
-            auto valueWrapper = Util::Async::Atomic<uint32_t>(value);
+            auto valueWrapper = Util::Async::Atomic<uint64_t>(value);
             return valueWrapper.bitTest(3);
         }
 
         [[nodiscard]] bool isLocked() {
-            auto valueWrapper = Util::Async::Atomic<uint32_t>(value);
+            auto valueWrapper = Util::Async::Atomic<uint64_t>(value);
             return valueWrapper.bitTest(2);
         }
     };
@@ -199,32 +199,32 @@ private:
     };
 
     struct TableIndex {
-        uint32_t referenceTableArrayIndex;
-        uint32_t referenceTableIndex;
-        uint32_t allocationTableIndex;
+        uint64_t referenceTableArrayIndex;
+        uint64_t referenceTableIndex;
+        uint64_t allocationTableIndex;
     };
 
     [[nodiscard]] TableIndex calculateIndex(uint8_t *address) const;
 
-    [[nodiscard]] uint32_t calculateAddress(const TableIndex &index) const;
+    [[nodiscard]] uint64_t calculateAddress(const TableIndex &index) const;
 
 private:
 
     BitmapMemoryManager &bitmapMemoryManager;
     uint8_t *startAddress;
     uint8_t *endAddress;
-    uint32_t blockSize;
+    uint64_t blockSize;
 
-    uint32_t referenceTableSizeInBlocks;
-    uint32_t allocationTableEntriesPerBlock;
-    uint32_t managedMemoryPerAllocationTable;
-    uint32_t referenceTableEntriesPerBlock;
-    uint32_t allocationTableCount;
+    uint64_t referenceTableSizeInBlocks;
+    uint64_t allocationTableEntriesPerBlock;
+    uint64_t managedMemoryPerAllocationTable;
+    uint64_t referenceTableEntriesPerBlock;
+    uint64_t allocationTableCount;
 
     ReferenceTableEntry **referenceTableArray;
 
     static Logger log;
-    static const constexpr uint32_t MIN_BITMAP_BLOCK_SIZE = 16;
+    static const constexpr uint64_t MIN_BITMAP_BLOCK_SIZE = 16;
 };
 
 }

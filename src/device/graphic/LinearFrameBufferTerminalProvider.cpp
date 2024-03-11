@@ -21,10 +21,10 @@ LinearFrameBufferTerminalProvider::LinearFrameBufferTerminalProvider(Util::Io::F
     uint8_t bppBuffer[16];
     uint8_t pitchBuffer[16];
 
-    Util::Address<uint32_t>(xBuffer).setRange(0, sizeof(xBuffer));
-    Util::Address<uint32_t>(yBuffer).setRange(0, sizeof(yBuffer));
-    Util::Address<uint32_t>(bppBuffer).setRange(0, sizeof(bppBuffer));
-    Util::Address<uint32_t>(pitchBuffer).setRange(0, sizeof(pitchBuffer));
+    Util::Address<uint64_t>(xBuffer).setRange(0, sizeof(xBuffer));
+    Util::Address<uint64_t>(yBuffer).setRange(0, sizeof(yBuffer));
+    Util::Address<uint64_t>(bppBuffer).setRange(0, sizeof(bppBuffer));
+    Util::Address<uint64_t>(pitchBuffer).setRange(0, sizeof(pitchBuffer));
 
     auto stream = Util::Io::FileInputStream(lfbFile);
     int16_t currentChar = 0;

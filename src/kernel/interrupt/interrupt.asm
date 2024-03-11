@@ -38,29 +38,29 @@ section .text
 
 ; Handle exceptions
 on_exception:
-    push ebp
-    mov  ebp, esp
+    push rbp
+    mov  rbp, rsp
 
-    pushfd
-    push cs
-    push dword [ebp + 0x04]
+    pushfq
+    ;push cs
+    push qword [rbp + 0x04]
     push 0x0
-    push dword [ebp + 0x08]
+    push qword [rbp + 0x08]
     jmp  wrapper_body
 
 ; Relocation of IDT-entries; set IDTR
 setup_idt:
-    mov    eax,wrapper_0 ; ax: lower 16 Bit
-    mov    ebx,eax
-    shr    ebx,16        ; bx: upper 16 Bit
-    mov    ecx,255       ; counter
+    mov    rax,wrapper_0 ; ax: lower 16 Bit
+    mov    rbx,rax
+    shr    rbx,16        ; bx: upper 16 Bit
+    mov    rcx,255       ; counter
 .loop:
-    add    [idt + 8 * ecx + 0],ax
-    adc    [idt + 8 * ecx + 6],bx
-    dec    ecx
+    ;add    [idt + 8 * rcx + 0],ax
+    ;adc    [idt + 8 * rcx + 6],bx
+    dec    rcx
     jge    .loop
 
-    lidt [idt_descriptor]
+    ;lidt [idt_descriptor]
     ret
 
 ; Reprogram PICs: All 15 hardware interrupts are one after each other in the IDT
@@ -138,15 +138,15 @@ wrapper i
 ; Unique body for all wrappers
 wrapper_body:
     ; Save state
-    pushad
-    push ds
-    push es
+    pushaq
+    ;push ds
+    ;push es
     push fs
     push gs
     cld
 
     ; Save eax, as it may contain the system call number
-    push eax
+    push rax
 
     mov ax, 0x10
     mov ds, ax
@@ -155,26 +155,26 @@ wrapper_body:
     mov gs, ax
 
     ; Restore eax
-    pop eax
+    pop rax
 
     ; Call interrupt handler
-    push esp
+    push rsp
     call dispatch_interrupt
-    add  esp, 0x04
+    add  rsp, 0x04
 
 ; Newly created threads start here
 interrupt_return:
     ; Set TSS to current kernel stack
-    push esp
+    push rsp
     call set_tss_stack_entry
-    add  esp, 0x04
+    add  rsp, 0x04
 
     ; Load new state
     pop gs
     pop fs
-    pop es
-    pop ds
-    popad
+    ;pop es
+    ;pop ds
+    popaq
 
     ; Remove error code and interrupt number
     add esp, 0x08

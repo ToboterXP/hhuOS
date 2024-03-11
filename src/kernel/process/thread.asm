@@ -21,15 +21,15 @@ extern release_scheduler_lock
 
 start_first_thread:
     ; get the thread's context
-    mov    esp, [esp + 0x04]
+    mov    rsp, [rsp + 0x04]
 
     ; load registers
-    pop edi
-    pop esi
-    pop ebx
-    pop ebp
+    pop rdi
+    pop rsi
+    pop rbx
+    pop rbp
 
-    mov dword [scheduler_initialized], 0x1
+    ;mov dword [scheduler_initialized], 0x1
     call flush_tss
     call release_scheduler_lock
 
@@ -38,24 +38,24 @@ start_first_thread:
 
 switch_context:
     ; get both thread's contexts
-    mov eax, [esp + 0x04]
-    mov edx, [esp + 0x08]
+    mov rax, [rsp + 0x04]
+    mov rdx, [rsp + 0x08]
 
     ; save current thread's context
-    push ebp
-    push ebx
-    push esi
-    push edi
+    push rbp
+    push rbx
+    push rsi
+    push rdi
 
     ; switch stacks
-    mov [eax], esp
-    mov esp, [edx]
+    mov [rax], rsp
+    mov rsp, [rdx]
 
     ; load next thread's context
-    pop edi
-    pop esi
-    pop ebx
-    pop ebp
+    pop rdi
+    pop rsi
+    pop rbx
+    pop rbp
 
     call release_scheduler_lock
 

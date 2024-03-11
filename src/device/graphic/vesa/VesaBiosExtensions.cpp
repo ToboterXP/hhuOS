@@ -84,7 +84,7 @@ bool VesaBiosExtensions::isAvailable() {
 
     // Initialize return data memory
     VbeInfo info{};
-    Util::Address<uint32_t>(vbeInfo).copyRange(Util::Address<uint32_t>(&info), sizeof(VbeInfo));
+    Util::Address<uint64_t>(vbeInfo).copyRange(Util::Address<uint64_t>(&info), sizeof(VbeInfo));
 
     // Perform the bios call and check if it was successful
     auto biosReturn = Bios::interrupt(0x10, biosParameters);
@@ -140,7 +140,7 @@ VesaBiosExtensions::VbeInfo VesaBiosExtensions::getVbeInfo() {
 
     // Initialize return data memory
     VbeInfo info{};
-    Util::Address<uint32_t>(vbeInfo).copyRange(Util::Address<uint32_t>(&info), sizeof(VbeInfo));
+    Util::Address<uint64_t>(vbeInfo).copyRange(Util::Address<uint64_t>(&info), sizeof(VbeInfo));
 
     // Perform the bios call and check if it was successful
     auto biosReturn = Bios::interrupt(0x10, biosParameters);
@@ -167,7 +167,7 @@ VesaBiosExtensions::VbeModeInfo VesaBiosExtensions::getModeInfo(uint16_t mode) {
     biosParameters.es = static_cast<uint16_t>(modeInfoPhysicalAddress >> 4);
 
     // Initialize return data memory
-    Util::Address<uint32_t>(modeInfo).setRange(0, VBE_MODE_INFO_SIZE);
+    Util::Address<uint64_t>(modeInfo).setRange(0, VBE_MODE_INFO_SIZE);
 
     // Perform the bios call and check if it was successful
     auto biosReturn = Bios::interrupt(0x10, biosParameters);

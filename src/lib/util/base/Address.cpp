@@ -26,10 +26,10 @@ template<typename T>
 Address<T>::Address(T address) : address(address) {}
 
 template<>
-Address<uint32_t>::Address(void *pointer) : address(reinterpret_cast<uint32_t>(pointer)) {}
+Address<uint64_t>::Address(void *pointer) : address(reinterpret_cast<uint64_t>(pointer)) {}
 
 template<>
-Address<uint32_t>::Address(const void *pointer) : address(reinterpret_cast<uint32_t>(pointer)) {}
+Address<uint64_t>::Address(const void *pointer) : address(reinterpret_cast<uint64_t>(pointer)) {}
 
 template<typename T>
 bool Address<T>::operator==(const Address &other) const {
@@ -234,7 +234,7 @@ int32_t Address<T>::compareString(const Address<T> &otherAddress) const {
 }
 
 template<>
-int32_t Address<uint32_t>::compareString(const char *otherString) const {
+int32_t Address<uint64_t>::compareString(const char *otherString) const {
     return compareString(Address(otherString));
 }
 

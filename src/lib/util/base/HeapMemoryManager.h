@@ -62,7 +62,7 @@ public:
      *
      * @return Pointer to the allocated chunk of memory or nullptr if no chunk with the required size is available
      */
-    [[nodiscard]] virtual void* allocateMemory(uint32_t size, uint32_t alignment) = 0;
+    [[nodiscard]] virtual void* allocateMemory(uint64_t size, uint64_t alignment) = 0;
 
     /**
      * Reallocate a block of memory of a given size and alignment.
@@ -78,7 +78,7 @@ public:
      *
      * @return Pointer to the reallocated chunk of memory or nullptr if no chunk with the required size is available
      */
-    [[nodiscard]] virtual void* reallocateMemory(void *pointer, uint32_t size, uint32_t alignment) = 0;
+    [[nodiscard]] virtual void* reallocateMemory(void *pointer, uint64_t size, uint64_t alignment) = 0;
 
     /**
      * Free an allocated block of memory.
@@ -86,7 +86,7 @@ public:
      * @param pointer Pointer to chunk of memory memory to be freed
 	 * @param alignment Alignment of the allocated chunk
      */
-    virtual void freeMemory(void *pointer, uint32_t alignment) = 0;
+    virtual void freeMemory(void *pointer, uint64_t alignment) = 0;
 };
 
 }

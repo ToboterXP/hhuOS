@@ -86,6 +86,9 @@ class Atomic<int32_t>;
 template
 class Atomic<uint32_t>;
 
+template
+class Atomic<uint64_t>;
+
 }
 
 #endif

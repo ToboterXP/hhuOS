@@ -407,24 +407,24 @@ void Apic::prepareApplicationProcessorStartupCode(void *gdts, void *stacks) {
     // Prepare the empty variables in the startup routine at their original location
     asm volatile("sidt %0"
             : "=m"(boot_ap_idtr));
-    asm volatile("mov %%cr0, %%eax;"
+    asm volatile("movq %%cr0, %%rax;"
             : "=a"(boot_ap_cr0));
-    asm volatile("mov %%cr3, %%eax;"
+    asm volatile("movq %%cr3, %%rax;"
             : "=a"(boot_ap_cr3));
-    asm volatile("mov %%cr4, %%eax;"
+    asm volatile("movq %%cr4, %%rax;"
             : "=a"(boot_ap_cr4));
-    boot_ap_counter = reinterpret_cast<uint32_t>(&initializedApplicationProcessorsCounter);
-    boot_ap_gdts = reinterpret_cast<uint32_t>(gdts);
-    boot_ap_stacks = reinterpret_cast<uint32_t>(stacks);
-    boot_ap_entry = reinterpret_cast<uint32_t>(&applicationProcessorEntry);
+    boot_ap_counter = reinterpret_cast<uint64_t>(&initializedApplicationProcessorsCounter);
+    boot_ap_gdts = reinterpret_cast<uint64_t>(gdts);
+    boot_ap_stacks = reinterpret_cast<uint64_t>(stacks);
+    boot_ap_entry = reinterpret_cast<uint64_t>(&applicationProcessorEntry);
 
     // Identity map the allocated physical memory to the kernel address space (So addresses don't change after enabling paging)
     auto &memoryService = Kernel::System::getService<Kernel::MemoryService>();
     memoryService.mapPhysicalAddress(Kernel::MemoryLayout::APPLICATION_PROCESSOR_STARTUP_CODE.startAddress, Kernel::MemoryLayout::APPLICATION_PROCESSOR_STARTUP_CODE.startAddress, Kernel::Paging::PRESENT | Kernel::Paging::READ_WRITE);
 
     // Copy the startup routine and prepared variables to the identity mapped page
-    const auto startupCode = Util::Address<uint32_t>(reinterpret_cast<uint32_t>(&boot_ap));
-    const auto destination = Util::Address<uint32_t>(Kernel::MemoryLayout::APPLICATION_PROCESSOR_STARTUP_CODE.startAddress);
+    const auto startupCode = Util::Address<uint64_t>(reinterpret_cast<uint32_t>(&boot_ap));
+    const auto destination = Util::Address<uint64_t>(Kernel::MemoryLayout::APPLICATION_PROCESSOR_STARTUP_CODE.startAddress);
     destination.copyRange(startupCode, boot_ap_size);
 }
 
@@ -458,8 +458,8 @@ Cpu::Descriptor *Apic::allocateApplicationProcessorGdt() {
     auto *tss = reinterpret_cast<void *>(memoryService.allocateLowerMemory(tssSize));
 
     // Zero everything
-    Util::Address<uint32_t>(gdt).setRange(0, 48);
-    Util::Address<uint32_t>(tss).setRange(0, tssSize);
+    Util::Address<uint64_t>(gdt).setRange(0, 48);
+    Util::Address<uint64_t>(tss).setRange(0, tssSize);
 
     // Set up general GDT for the AP
     // First entry has to be null

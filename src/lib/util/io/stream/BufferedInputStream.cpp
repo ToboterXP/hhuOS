@@ -56,8 +56,8 @@ int32_t BufferedInputStream::read(uint8_t *target, uint32_t offset, uint32_t len
 
     do {
         uint32_t readCount = valid - position > length ? length : valid - position;
-        Address<uint32_t> sourceAddress(buffer + position);
-        Address<uint32_t> targetAddress(target + offset);
+        Address<uint64_t> sourceAddress(buffer + position);
+        Address<uint64_t> targetAddress(target + offset);
         targetAddress.copyRange(sourceAddress, readCount);
 
         position += readCount;
