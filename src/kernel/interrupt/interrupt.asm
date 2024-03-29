@@ -55,12 +55,15 @@ setup_idt:
     shr    rbx,16        ; bx: upper 16 Bit
     mov    rcx,255       ; counter
 .loop:
-    ;add    [idt + 8 * rcx + 0],ax
-    ;adc    [idt + 8 * rcx + 6],bx
+	mov rdx, rcx
+	shl rdx, 4
+    add  word  [idt - KERNEL_START + rdx + 0], ax
+    adc  word   [idt - KERNEL_START + rdx + 6],bx
     dec    rcx
     jge    .loop
 
-    ;lidt [idt_descriptor]
+    lidt [idt_descriptor - KERNEL_START]
+	
     ret
 
 ; Reprogram PICs: All 15 hardware interrupts are one after each other in the IDT
@@ -138,7 +141,16 @@ wrapper i
 ; Unique body for all wrappers
 wrapper_body:
     ; Save state
-    pushaq
+	 mov r8, rsp
+     push rax
+	 push rcx 
+	 push rdx 
+	 push rbx 
+	 push r8 
+	 push rbp 
+	 push rsi 
+	 push rdi
+	 
     ;push ds
     ;push es
     push fs
@@ -174,7 +186,16 @@ interrupt_return:
     pop fs
     ;pop es
     ;pop ds
-    popaq
+    
+	pop rdi
+	pop rsi 
+	pop rbp
+	pop r8 
+	pop rbx 
+	pop rdx 
+	pop rcx
+	pop rax
+	mov rsp, r8
 
     ; Remove error code and interrupt number
     add esp, 0x08
@@ -184,7 +205,7 @@ section .data
 
 idt_descriptor:
     dw    256 * 8 - 1 ; idt contains 256 entries
-    dd    idt
+    dq    idt
 
 ; Create IDT with 256 entries
 idt:
@@ -193,6 +214,7 @@ idt:
     dw    0x0008
     dw    0xee00
     dw    ((wrapper_%1 - wrapper_0) & 0xffff0000) >> 16
+	dq 	0
 %endmacro
 
 ; Create first 134 entries
@@ -207,6 +229,7 @@ dw (wrapper_134 - wrapper_0) & 0xffff
 dw    0x0008
 dw    0xef00
 dw ((wrapper_134 - wrapper_0) & 0xffff0000) >> 16
+dq 	0
 
 ; Create remaining entries
 %assign i 135

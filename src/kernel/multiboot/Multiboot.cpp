@@ -26,6 +26,8 @@
 #include "lib/util/base/Address.h"
 #include "lib/util/collection/ArrayList.h"
 
+#include "BootDebug.h"
+
 namespace Kernel {
 
 const Multiboot::Info *Multiboot::info{};
@@ -161,13 +163,17 @@ const Multiboot::Module& Multiboot::getModule(const Util::String &moduleName) {
     Util::Exception::throwException(Util::Exception::INVALID_ARGUMENT, "Multiboot: Requested module is not loaded!");
 }
 
-void Multiboot::copyMultibootInfo(const Info *source, uint8_t *destination, uint32_t maxBytes) {
+
+
+void Multiboot::copyMultibootInfo(const Info *source, uint8_t *destination, uint64_t maxBytes) {
+	
+	
     auto *copyInfo = reinterpret_cast<CopyInformation*>(destination);
     copyInfo->sourceAddress = reinterpret_cast<uint32_t>(source);
     copyInfo->targetAreaSize = maxBytes;
     copyInfo->copiedBytes = sizeof(CopyInformation);
     copyInfo->success = true;
-
+	
     uint32_t toCopy = source->size;
     if (copyInfo->copiedBytes + source->size > maxBytes) {
         toCopy = maxBytes - copyInfo->copiedBytes;

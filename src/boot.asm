@@ -147,8 +147,7 @@ multiboot_header:
 [BITS 32]
 boot:
 
-	cli 
-	hlt
+		
 
     ; Save multiboot structure address
     mov [multiboot_physical_addr - KERNEL_START], ebx
@@ -176,8 +175,6 @@ boot:
 		
 	mov    eax, 0x10     ; 3. Eintrag in der GDT
 	  mov    ds, ax
-	  
-	 
 	  
 	  mov    es, ax
 	  mov    fs, ax
@@ -229,20 +226,10 @@ _init_longmode:
 	  or     eax, 1 << 8 ; LME (Long Mode Enable)
 	  wrmsr
 	  
-	
-	mov byte al, 0x41
-	  out 0xe9, al
-	
-	  cli 
-	  hlt
-	  
 	  ; Paging aktivieren
 	  mov    eax, cr0
 	  or     eax, 1 << 31
 	  mov    cr0, eax
-	  
-	    
-	  
 	  
 	  
 	  mov    eax, 0x10     ; 3. Eintrag in der GDT
@@ -280,7 +267,7 @@ _setup_paging:
 	  ; PDPE (Page-Directory-Pointer Entry / 2. Stufe) für aktuell 16GB
 	  mov    eax, _pd - KERNEL_START
 	  or     eax, 0x7           ; Adresse der ersten Tabelle (3. Stufe) mit Flags.
-	  mov    ecx, 0			; map to 0xc0000000
+	  mov    ecx, 3			; map to 0xc0000000
 _fill_tables2:
 	  cmp    ecx, MAX_MEM       ; MAX_MEM Tabellen referenzieren
 	  je     _fill_tables2_done
@@ -294,8 +281,8 @@ _fill_tables2_done:
 	; identity map first gb 
 	mov    eax, _pd - KERNEL_START
 	  or     eax, 0x7          ; Adresse der ersten Tabelle (3. Stufe) mit Flags.
-	  ;mov    dword [_pdp - KERNEL_START ], eax
-	  ;mov    dword [_pdp - KERNEL_START+ 4], 0
+	  mov    dword [_pdp - KERNEL_START ], eax
+	  mov    dword [_pdp - KERNEL_START+ 4], 0
 
 	  ; PDE (Page Directory Entry / 3. Stufe)
 	  mov    eax, 0x0 | 0x87    ; Startadressenbyte 0..3 (=0) + Flags
@@ -313,73 +300,81 @@ _fill_tables3:
 _fill_tables3_done:
 
    ; Basiszeiger auf PML4 setzen
-	  mov    eax, _pml4
+	  mov    eax, _pml4 - KERNEL_START
 	  mov    cr3, eax
 	  ret
 	
 	
 [BITS 64]
 _longmode_start:
-
-		
+	
+	 
 	
 clear_bss:
-    mov    edi,___PHYS_BSS_START__
+    mov    rdi,___PHYS_BSS_START__
 clear_bss_loop:
-    cmp    edi,___PHYS_BSS_END__
+    cmp    rdi,___PHYS_BSS_END__
     jge clear_bss_done
     mov    byte [edi],0
-    inc    edi
+    inc    rdi
     jmp clear_bss_loop
 clear_bss_done:
+
     ; Set stack again to cut off possible old values
-    mov esp, (initial_kernel_stack - KERNEL_START + STACK_SIZE)
+    mov rsp, (initial_kernel_stack - KERNEL_START + STACK_SIZE)
 
     ; Copy the multiboot info struct into bss
-    push qword MULTIBOOT_SIZE
-    push qword (multiboot_data - KERNEL_START)
-    push qword [multiboot_physical_addr - KERNEL_START]
+	mov rdi, [multiboot_physical_addr - KERNEL_START]
+	mov rsi, (multiboot_data - KERNEL_START)
+	mov rdx, MULTIBOOT_SIZE
     call copy_multiboot_info
-
+	
+	
     ; Copy the ACPI structures into bss
-   push qword ACPI_SIZE
-   push qword (acpi_data - KERNEL_START)
-   push qword [multiboot_physical_addr - KERNEL_START]
-   call copy_acpi_tables
+   
+   ;mov rdi, [multiboot_physical_addr - KERNEL_START]
+   ;mov rsi, (acpi_data - KERNEL_START)
+   ;mov rdx, ACPI_SIZE
+   ;call copy_acpi_tables
 
     ; Copy the SMBIOS structures into bss
-    push qword SMBIOS_SIZE
-   push qword (smbios_data - KERNEL_START)
-    push qword [multiboot_physical_addr - KERNEL_START]
-    call copy_smbios_tables
+    ;push qword SMBIOS_SIZE
+   ;push qword (smbios_data - KERNEL_START)
+    ;push qword [multiboot_physical_addr - KERNEL_START]
+    ;call copy_smbios_tables
 
     ; Read memory map from multiboot info struct
-    push qword [multiboot_physical_addr - KERNEL_START]
+    mov rdi, [multiboot_physical_addr - KERNEL_START]
     call initialize_memory_block_map
 	
-	
-	
-	cli
-	 hlt
+
 	
 	;set gdt to virtual memory
-	;lgdt [gdt_descriptor]
+	lgdt [gdt_descriptor - KERNEL_START]
 
     ; Set esp to initial kernel stack
-    ;mov esp, (initial_kernel_stack + STACK_SIZE)
-	
+    mov esp, (initial_kernel_stack + STACK_SIZE)
 
     ; Setup interrupts (see interrupts.asm)
     call setup_idt
+	
+	call reprogram_pics
+	
+	call initialize_system
+	
+	mov al, 0x41
+	 out 0xe9, al
+	 cli 
+	 hlt
 	
 	cli 
 	hlt
 	
 	
-    ;call reprogram_pics
+    ;
 
     ; Initialize system
-    ;call initialize_system
+    ;
 
     ; Call the kernel's main() function
     ;call main
@@ -483,8 +478,8 @@ _gdt_80:
 	  dd  _gdt - KERNEL_START      ; Adresse der GDT
 	  
 gdt_descriptor:
-	dw 0
-	dd 0
+	dw  6*8 + 16 - 1   ; GDT Limit=32, 7 GDT Eintraege - 1
+	  dd  _gdt      ; Adresse der GDT
 	
 gdt_phys_descriptor:
 	dw 0

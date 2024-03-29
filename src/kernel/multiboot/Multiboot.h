@@ -285,7 +285,7 @@ public:
 
     // Used during the bootstrap process
 
-    static void copyMultibootInfo(const Info *source, uint8_t *destination, uint32_t maxBytes);
+    static void copyMultibootInfo(const Info *source, uint8_t *destination, uint64_t maxBytes);
 
     static void initializeMemoryBlockMap(const Info *multibootInfo);
 

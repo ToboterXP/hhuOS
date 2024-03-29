@@ -17,7 +17,7 @@
 # along with this program.  If not, see <http://www.gnu.org/licenses/>
 
 BUILD_TYPE="Default"
-TARGET="towboot"
+TARGET="limine"
 BUILD_DIR="build"
 CORE_COUNT=$(nproc)
 VALID_TARGETS="grub limine towboot"

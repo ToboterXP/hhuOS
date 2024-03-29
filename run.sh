@@ -51,7 +51,8 @@ if [ -f "hhuOS-towboot.img" ]; then
 elif [ -f "hhuOS-limine.iso" ]; then
   QEMU_BOOT_DEVICE="-boot d -cdrom hhuOS-limine.iso"
 elif [ -f "hhuOS-grub.iso" ]; then
-  QEMU_BOOT_DEVICE="-boot d -cdrom hhuOS-grub.iso"
+  #QEMU_BOOT_DEVICE="-boot d -cdrom hhuOS-grub.iso"
+  QEMU_BOOT_DEVICE="-drive driver=raw,node-name=boot,file.driver=file,file.filename=hhuOS-grub.iso"
 fi
 
 version_lt() {

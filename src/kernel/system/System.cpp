@@ -72,11 +72,16 @@ Logger System::log = Logger::get("System");
  */
 void System::initializeSystem() {
 	BootDebug::qemuWriteString("Hello World\r\n");
+	
     Multiboot::initialize();
-    Device::Acpi::initialize();
-    Device::SmBios::initialize();
+	
+    //Device::Acpi::initialize();
+    //Device::SmBios::initialize();
 
     kernelHeapMemoryManager = &initializeKernelHeap();
+	
+	BootDebug::qemuWriteString("A");
+	BootDebug::halt();
 
     uint32_t physicalMemorySize = calculatePhysicalMemorySize();
 
@@ -348,7 +353,7 @@ Util::HeapMemoryManager& System::initializeKernelHeap() {
         }
     }
 
-    Util::Exception::throwException(Util::Exception::ILLEGAL_STATE, "No 4 MiB block available for bootstrapping the kernel heap memory manager!");
+    Util::Exception::throwException(Util::Exception::ILLEGAL_STATE, "No 2 MiB block available for bootstrapping the kernel heap memory manager!");
 }
 
 TaskStateSegment &System::getTaskStateSegment() {
